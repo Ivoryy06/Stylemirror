@@ -1,0 +1,186 @@
+/* StyleMirror — styles/index.css
+   Imported by main.jsx / index.html
+   Provides: animations, print styles, scrollbar theming, dark-mode vars,
+             readability heatmap classes, and sentence-score gradients.
+*/
+
+/* ── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── CSS Custom Properties ───────────────────────────────────────────────── */
+:root {
+  --purple-50:  #EEEDFE;
+  --purple-200: #AFA9EC;
+  --purple-400: #7F77DD;
+  --purple-600: #534AB7;
+  --purple-800: #3C3489;
+  --purple-900: #26215C;
+
+  --teal-50:    #E1F5EE;
+  --teal-400:   #1D9E75;
+  --teal-600:   #0F6E56;
+
+  --amber-50:   #FAEEDA;
+  --amber-400:  #BA7517;
+  --amber-600:  #854F0B;
+
+  --coral-50:   #FAECE7;
+  --coral-400:  #D85A30;
+  --coral-600:  #993C1D;
+
+  --gray-50:    #F1EFE8;
+  --gray-100:   #D3D1C7;
+  --gray-400:   #888780;
+  --gray-600:   #5F5E5A;
+  --gray-900:   #2C2C2A;
+
+  --surface:    #FAFAF8;
+  --border:     rgba(0,0,0,0.1);
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Lora', Georgia, serif;
+  --font-ui:      'DM Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  --transition-fast:   0.12s ease;
+  --transition-medium: 0.25s ease;
+}
+
+/* ── Base reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family:      var(--font-ui);
+  background-color: var(--surface);
+  color:            var(--gray-900);
+  line-height:      1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--gray-50); }
+::-webkit-scrollbar-thumb { background: var(--gray-100); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--purple-200); }
+
+/* ── Typography helpers ──────────────────────────────────────────────────── */
+.font-display { font-family: var(--font-display); }
+.font-body    { font-family: var(--font-body); }
+.font-mono    { font-family: var(--font-mono); }
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@keyframes ringFill {
+  from { stroke-dasharray: 0 999; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.animate-fadeIn  { animation: fadeIn  0.3s var(--transition-medium) both; }
+.animate-slideIn { animation: slideIn 0.25s ease both; }
+.animate-pulse   { animation: pulse 1.5s ease-in-out infinite; }
+.cursor-blink    { animation: blink 1s step-end infinite; }
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-50) 25%, var(--gray-100) 50%, var(--gray-50) 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Readability heatmap classes (used by ReadabilityPanel) ──────────────── */
+.rdbl-very-easy      { color: var(--teal-600);  background: var(--teal-50); }
+.rdbl-easy           { color: var(--teal-400);  background: var(--teal-50); }
+.rdbl-fairly-easy    { color: #639922;           background: #EAF3DE; }
+.rdbl-standard       { color: var(--amber-400); background: var(--amber-50); }
+.rdbl-fairly-diff    { color: var(--amber-600); background: var(--amber-50); }
+.rdbl-difficult      { color: var(--coral-400); background: var(--coral-50); }
+.rdbl-very-confusing { color: var(--coral-600); background: var(--coral-50); }
+
+/* ── Sentence heatmap bars ───────────────────────────────────────────────── */
+.sent-bar-short  { background: #C0DD97; }
+.sent-bar-mid    { background: #7F77DD; }
+.sent-bar-long   { background: #D85A30; }
+
+/* ── Score ring SVG transition ───────────────────────────────────────────── */
+.score-ring-arc {
+  transition: stroke-dasharray 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: ringFill 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.tooltip-wrap { position: relative; display: inline-block; }
+.tooltip-wrap .tooltip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-900); color: #fff;
+  font-size: 11px; font-family: var(--font-ui);
+  padding: 4px 8px; border-radius: 4px;
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity var(--transition-fast);
+}
+.tooltip-wrap:hover .tooltip { opacity: 1; }
+
+/* ── Print styles ────────────────────────────────────────────────────────── */
+@media print {
+  body { background: white; font-size: 12pt; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  h1 { font-size: 20pt; }
+  p  { font-size: 11pt; line-height: 1.6; }
+  a  { color: inherit; text-decoration: none; }
+
+  .page-break-before { page-break-before: always; }
+  .page-break-avoid  { page-break-inside: avoid; }
+}
+.print-only { display: none; }
+
+/* ── Dark mode ───────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #1C1B1A;
+    --border:  rgba(255,255,255,0.08);
+    --gray-900: #E8E6E0;
+    --gray-600: #A8A69E;
+    --gray-400: #6E6D67;
+    --gray-100: #3A3937;
+    --gray-50:  #252421;
+  }
+  body { background-color: #191817; }
+  ::-webkit-scrollbar-track { background: #252421; }
+}
+
+/* ── Focus visible ───────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--purple-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
