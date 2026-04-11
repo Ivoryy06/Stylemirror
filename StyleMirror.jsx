@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import "./src/index.css";
 
-const API_BASE = "http://localhost:8787";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8787";
 
 const FONTS = {
   display: "'Georgia', serif",

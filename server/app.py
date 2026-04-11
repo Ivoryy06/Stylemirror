@@ -29,7 +29,7 @@ except Exception:
                  "has","had","do","does","did","will","would","could","should"}
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5173", "http://localhost:3000"])
+CORS(app)  # allow all origins — restrict to your frontend domain in production
 
 # ── FIX: DB and schema live in the same directory as app.py (repo root) ──────
 ROOT     = Path(__file__).parent          # repo root (where app.py lives)
@@ -380,37 +380,69 @@ def api_structure():
     return jsonify(structure_fingerprint(data.get("text", "")))
 
 
-# ── FEATURE 8: Ollama proxy (fully local, no API key needed) ─────────────────
+# ── FEATURE 8: LLM generation (OpenAI-compatible, streaming) ─────────────────
+#
+# Set these environment variables:
+#   OPENAI_API_KEY   — your OpenAI key (or any OpenAI-compatible provider key)
+#   OPENAI_BASE_URL  — override for other providers, e.g.:
+#                        Anthropic via openai-compat: https://api.anthropic.com/v1
+#                        Groq:  https://api.groq.com/openai/v1
+#                        local Ollama: http://localhost:11434/v1
+#   LLM_MODEL        — model name, default: gpt-4o-mini
 
-OLLAMA_URL   = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3")
+LLM_API_KEY  = os.environ.get("OPENAI_API_KEY", "")
+LLM_BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+LLM_MODEL    = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
     import urllib.request, urllib.error, json as _json
     from flask import Response, stream_with_context
 
+    if not LLM_API_KEY:
+        return jsonify({"error": "OPENAI_API_KEY not set"}), 503
+
     data     = request.get_json()
     messages = [{"role": "system", "content": data.get("system", "")}] + data.get("messages", [])
-    payload  = _json.dumps({"model": OLLAMA_MODEL, "messages": messages, "stream": True}).encode()
+    payload  = _json.dumps({
+        "model":      LLM_MODEL,
+        "messages":   messages,
+        "stream":     True,
+        "max_tokens": data.get("max_tokens", 1000),
+    }).encode()
 
     req = urllib.request.Request(
-        f"{OLLAMA_URL}/api/chat",
+        f"{LLM_BASE_URL}/chat/completions",
         data=payload,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type":  "application/json",
+            "Authorization": f"Bearer {LLM_API_KEY}",
+        },
         method="POST",
     )
     try:
         resp = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+        return jsonify({"error": f"LLM API error {e.code}: {e.read().decode()}"}), 502
     except urllib.error.URLError as e:
-        return jsonify({"error": f"Ollama not reachable: {e.reason}"}), 502
+        return jsonify({"error": f"LLM not reachable: {e.reason}"}), 502
 
     def stream():
         for raw in resp:
-            chunk = _json.loads(raw.decode().strip())
-            text  = chunk.get("message", {}).get("content", "")
-            if text:
-                yield f"data: {_json.dumps({'type':'content_block_delta','delta':{'text':text}})}\n\n"
+            line = raw.decode().strip()
+            if not line.startswith("data:"):
+                continue
+            payload_str = line[5:].strip()
+            if payload_str == "[DONE]":
+                break
+            try:
+                chunk = _json.loads(payload_str)
+                text  = chunk["choices"][0]["delta"].get("content", "")
+                if text:
+                    yield f"data: {_json.dumps({'type':'content_block_delta','delta':{'text':text}})}\n\n"
+            except (KeyError, _json.JSONDecodeError):
+                pass
 
     return Response(stream_with_context(stream()), content_type="text/event-stream")
 
@@ -419,7 +451,8 @@ def api_generate():
 
 @app.route("/api/health")
 def health():
-    return jsonify({"status": "ok", "has_pdf": HAS_PDF, "version": "2.0.0"})
+    return jsonify({"status": "ok", "has_pdf": HAS_PDF, "version": "2.0.0",
+                    "llm_model": LLM_MODEL, "llm_ready": bool(LLM_API_KEY)})
 
 
 if __name__ == "__main__":
