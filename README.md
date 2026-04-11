@@ -61,20 +61,22 @@ The backend uses any OpenAI-compatible API. Set these environment variables:
 
 ---
 
-## Setup — Local
+## Installation
+
+> **Before you start:** grab an API key from [OpenAI](https://platform.openai.com/api-keys), [Groq](https://console.groq.com) (free), or any other provider listed in the [LLM Providers](#llm-providers) table above.
+
+---
 
 ### 🪟 Windows
 
-**Prerequisites:** [Node.js 18+](https://nodejs.org), [Python 3.11+](https://www.python.org/downloads/), an API key
+1. Install [Node.js 18+](https://nodejs.org) and [Python 3.11+](https://www.python.org/downloads/)
+2. Clone the repo and open a terminal inside it
+3. Run:
 
-**1. Configure environment**
 ```bat
 copy .env.example .env
-:: edit .env and set OPENAI_API_KEY (and optionally OPENAI_BASE_URL / LLM_MODEL)
-```
+:: Open .env and paste your OPENAI_API_KEY
 
-**2. Start the backend**
-```bat
 cd server
 python -m venv venv
 venv\Scripts\activate
@@ -82,29 +84,27 @@ pip install -r requirements.txt
 python app.py
 ```
 
-**3. Start the frontend**
+4. Open a **second terminal** in the project root:
+
 ```bat
-cd ..
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+5. Visit `http://localhost:5173` ✅
 
 ---
 
 ### 🐧 Linux / macOS
 
-**Prerequisites:** [Node.js 18+](https://nodejs.org), [Python 3.11+](https://www.python.org/downloads/), an API key
+1. Install [Node.js 18+](https://nodejs.org) and [Python 3.11+](https://www.python.org/downloads/)
+2. Clone the repo and open a terminal inside it
+3. Run:
 
-**1. Configure environment**
 ```bash
 cp .env.example .env
-# edit .env and set OPENAI_API_KEY (and optionally OPENAI_BASE_URL / LLM_MODEL)
-```
+# Open .env and paste your OPENAI_API_KEY
 
-**2. Start the backend**
-```bash
 cd server
 python3 -m venv venv
 source venv/bin/activate
@@ -112,26 +112,24 @@ pip install -r requirements.txt
 python app.py
 ```
 
-**3. Start the frontend**
+4. Open a **second terminal** in the project root:
+
 ```bash
-cd ..
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+5. Visit `http://localhost:5173` ✅
 
 ---
 
 ### 📱 Android / iOS
 
-StyleMirror does not have a native mobile app. To use it on Android or iOS:
+StyleMirror is a web app — no app store install needed. To use it on mobile:
 
-1. **Deploy the backend** to a cloud provider (see [Deployment](#deployment) below) so it's reachable over the internet.
-2. **Deploy the frontend** to Vercel or Netlify and set `VITE_API_BASE` to your backend URL.
-3. Open the deployed frontend URL in your mobile browser (Chrome on Android, Safari on iOS).
-
-The web app is fully responsive and works in mobile browsers without any installation required.
+1. **Deploy the backend** to a cloud provider (see [Deployment](#deployment) below)
+2. **Deploy the frontend** to Vercel or Netlify, setting `VITE_API_BASE` to your backend URL
+3. Open the deployed URL in your mobile browser (Chrome on Android, Safari on iOS) ✅
 
 ---
 
