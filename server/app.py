@@ -268,6 +268,39 @@ def api_originality():
     return jsonify({"originality_pct": originality, "flag": originality < 60, "matches": scores})
 
 
+# ── FEATURE 6: Anthropic proxy (keeps API key server-side) ───────────────────
+
+@app.route("/api/generate", methods=["POST"])
+def api_generate():
+    import urllib.request, urllib.error
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return jsonify({"error": "ANTHROPIC_API_KEY not set on server"}), 500
+
+    payload = request.get_data()
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages",
+        data=payload,
+        headers={
+            "Content-Type":      "application/json",
+            "x-api-key":         api_key,
+            "anthropic-version": "2023-06-01",
+        },
+        method="POST",
+    )
+    try:
+        resp = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+        return jsonify({"error": e.read().decode()}), e.code
+
+    from flask import Response, stream_with_context
+    def stream():
+        while chunk := resp.read(512):
+            yield chunk
+    return Response(stream_with_context(stream()),
+                    content_type=resp.headers.get("Content-Type", "text/event-stream"))
+
+
 # ── health ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/health")

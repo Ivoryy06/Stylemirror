@@ -2,10 +2,9 @@
 // FIX: CSS import changed from './styles/index.css' → './index.css' (flat repo structure)
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import "./index.css"; // ← FIXED (was ./styles/index.css)
+import "./src/index.css"; // ← FIXED (was ./styles/index.css)
 
 const API_BASE = "http://localhost:8787";
-const ANTHROPIC = "https://api.anthropic.com/v1/messages";
 
 const FONTS = {
   display: "var(--font-display)",
@@ -519,7 +518,7 @@ export default function StyleMirror() {
     streamRef.current = "";
     const sampleText = samples.map((s, i) => `--- Sample ${i+1}: "${s.title}" ---\n${s.text}`).join("\n\n");
     try {
-      const resp = await fetch(ANTHROPIC, {
+      const resp = await fetch(`${API_BASE}/api/generate`, {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({

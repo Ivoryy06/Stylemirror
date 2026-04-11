@@ -1,4 +1,4 @@
- StyleMirror
+# StyleMirror
 
 A writing assistant that learns your voice. Paste samples of your writing, and StyleMirror continues new pieces in your exact style — analyzing readability, vocabulary fingerprint, and originality along the way. All within your own local network.
 
@@ -41,9 +41,10 @@ Built with React + Vite (frontend) and Python/Flask (backend), powered by the Cl
 
 ```bash
 cd server
-python -m venv ../venv
-source ../venv/bin/activate
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
+export ANTHROPIC_API_KEY=sk-ant-...
 python app.py
 ```
 
@@ -58,25 +59,24 @@ npm run dev
 
 The app will be available at `http://localhost:5173`.
 
-### 3. API Key
-
-Enter your Anthropic API key in the app's settings panel. It is stored only in your browser session and never sent to the backend.
+> The Vite dev server proxies all `/api/*` requests to the backend, so no CORS configuration is needed.
 
 ---
 
 ## API Endpoints
 
-| Method | Endpoint               | Description                        |
-|--------|------------------------|------------------------------------|
-| POST   | `/api/readability`     | Flesch–Kincaid scores for text     |
-| POST   | `/api/vocab-fingerprint` | Vocabulary analysis for samples  |
-| POST   | `/api/export-pdf`      | Export session as PDF              |
-| POST   | `/api/originality`     | Similarity check against samples   |
-| GET    | `/api/sessions`        | List saved sessions                |
-| POST   | `/api/sessions`        | Save a session                     |
-| GET    | `/api/sessions/:id`    | Load a session                     |
-| DELETE | `/api/sessions/:id`    | Delete a session                   |
-| GET    | `/api/health`          | Health check                       |
+| Method | Endpoint                 | Description                        |
+|--------|--------------------------|------------------------------------|
+| POST   | `/api/generate`          | Proxy Claude API call (streams)    |
+| POST   | `/api/readability`       | Flesch–Kincaid scores for text     |
+| POST   | `/api/vocab-fingerprint` | Vocabulary analysis for samples    |
+| POST   | `/api/export-pdf`        | Export session as PDF              |
+| POST   | `/api/originality`       | Similarity check against samples   |
+| GET    | `/api/sessions`          | List saved sessions                |
+| POST   | `/api/sessions`          | Save a session                     |
+| GET    | `/api/sessions/:id`      | Load a session                     |
+| DELETE | `/api/sessions/:id`      | Delete a session                   |
+| GET    | `/api/health`            | Health check                       |
 
 ---
 
@@ -89,7 +89,6 @@ Stylemirror/
 ├── vite.config.js
 ├── src/
 │   ├── main.jsx
-│   ├── App.jsx
 │   └── index.css
 ├── server/
 │   ├── app.py            # Flask API
