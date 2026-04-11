@@ -1,6 +1,6 @@
  StyleMirror
 
-A writing assistant that learns your voice. Paste samples of your writing, and StyleMirror continues new pieces in your exact style — analyzing readability, vocabulary fingerprint, and originality along the way.
+A writing assistant that learns your voice. Paste samples of your writing, and StyleMirror continues new pieces in your exact style — analyzing readability, vocabulary fingerprint, and originality along the way. All within your own local network.
 
 Built with React + Vite (frontend) and Python/Flask (backend), powered by the Claude API.
 
