@@ -66,7 +66,7 @@ That's the only AI setup needed. No accounts, no keys.
 ### Step 2 — Clone the repo
 
 ```bash
-git clone https://github.com/your-username/stylemirror.git
+git clone https://github.com/Ivoryy06/stylemirror.git
 cd stylemirror
 ```
 
@@ -143,7 +143,7 @@ ollama pull llama3
 
 **3. Clone and set up the backend** (still in Termux):
 ```bash
-git clone https://github.com/your-username/stylemirror.git
+git clone https://github.com/Ivoryy06/stylemirror.git
 cd stylemirror/server
 python -m venv venv
 source venv/bin/activate
