@@ -1,0 +1,27 @@
+# ── Node ──────────────────────────────────────
+node_modules/
+dist/
+.vite/
+
+# ── Python ────────────────────────────────────
+server/venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# ── Database (runtime, not source) ────────────
+db/stylemirror.db
+
+# ── Rust build artefacts ──────────────────────
+cli/target/
+stylemirror-cli
+
+# ── OS junk ───────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Editor ────────────────────────────────────
+.vscode/
+.idea/
+*.swp

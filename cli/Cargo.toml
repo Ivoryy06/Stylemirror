@@ -1,0 +1,13 @@
+[package]
+name        = "stylemirror-cli"
+version     = "2.0.0"
+edition     = "2021"
+description = "StyleMirror offline text analysis CLI"
+
+[[bin]]
+name = "stylemirror-cli"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+strip     = true

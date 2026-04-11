@@ -7,7 +7,7 @@ Provides: readability scoring, vocabulary fingerprinting, PDF export,
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import sqlite3, json, math, re, io, os, hashlib, datetime
+import sqlite3, json, re, io, os, hashlib, datetime
 from collections import Counter
 from pathlib import Path
 
@@ -31,7 +31,10 @@ except Exception:
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:5173", "http://localhost:3000"])
 
-DB_PATH = Path(__file__).parent.parent / "db" / "stylemirror.db"
+# ── FIX: DB and schema live in the same directory as app.py (repo root) ──────
+ROOT     = Path(__file__).parent          # repo root (where app.py lives)
+DB_PATH  = ROOT / "stylemirror.db"
+SCHEMA   = ROOT / "schema.sql"
 
 
 # ── database helpers ──────────────────────────────────────────────────────────
@@ -45,7 +48,7 @@ def get_db():
 def init_db():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with get_db() as conn:
-        conn.executescript(open(Path(__file__).parent.parent / "db" / "schema.sql").read())
+        conn.executescript(SCHEMA.read_text())
 
 
 # ── FEATURE 1: Flesch–Kincaid readability scoring ────────────────────────────
@@ -64,78 +67,61 @@ def readability_scores(text: str) -> dict:
     sentences = [s.strip() for s in sentences if s.strip()]
     words     = re.findall(r"\b\w+\b", text)
     if not sentences or not words:
-        return {"flesch": 0, "grade": 0, "level": "N/A", "avg_sentence_len": 0}
+        return {"flesch": 0, "grade": 0, "level": "N/A", "avg_sentence_len": 0,
+                "total_words": 0, "total_sentences": 0}
 
     total_syllables = sum(count_syllables(w) for w in words)
-    asl = len(words) / len(sentences)          # avg sentence length
-    asw = total_syllables / len(words)          # avg syllables per word
+    asl = len(words) / len(sentences)
+    asw = total_syllables / len(words)
 
     flesch = 206.835 - (1.015 * asl) - (84.6 * asw)
     flesch = max(0, min(100, round(flesch, 1)))
-
-    # Flesch–Kincaid grade level
     grade  = max(0, round((0.39 * asl) + (11.8 * asw) - 15.59, 1))
 
-    levels = [(90, "Very Easy"), (80, "Easy"), (70, "Fairly Easy"),
-              (60, "Standard"), (50, "Fairly Difficult"),
-              (30, "Difficult"), (0,  "Very Confusing")]
+    levels = [(90,"Very Easy"),(80,"Easy"),(70,"Fairly Easy"),
+              (60,"Standard"),(50,"Fairly Difficult"),(30,"Difficult"),(0,"Very Confusing")]
     level = next(lbl for thr, lbl in levels if flesch >= thr)
 
-    return {
-        "flesch":           flesch,
-        "grade":            grade,
-        "level":            level,
-        "avg_sentence_len": round(asl, 1),
-        "total_words":      len(words),
-        "total_sentences":  len(sentences),
-    }
+    return {"flesch": flesch, "grade": grade, "level": level,
+            "avg_sentence_len": round(asl, 1),
+            "total_words": len(words), "total_sentences": len(sentences)}
 
 
 @app.route("/api/readability", methods=["POST"])
 def api_readability():
     data = request.get_json()
-    text = data.get("text", "")
-    return jsonify(readability_scores(text))
+    return jsonify(readability_scores(data.get("text", "")))
 
 
-# ── FEATURE 2: Vocabulary fingerprint (lexical richness + signature words) ───
+# ── FEATURE 2: Vocabulary fingerprint ────────────────────────────────────────
 
-def vocab_fingerprint(samples: list[str]) -> dict:
-    all_words   = []
+def vocab_fingerprint(samples: list) -> dict:
+    all_words = []
     for s in samples:
         all_words.extend(re.findall(r"\b[a-z]+\b", s.lower()))
 
     if not all_words:
-        return {"ttr": 0, "signature_words": [], "avg_word_length": 0}
+        return {"ttr": 0, "signature_words": [], "avg_word_length": 0,
+                "unique_words": 0, "total_words": 0, "top_content_words": []}
 
-    unique      = set(all_words)
-    content     = [w for w in all_words if w not in STOPWORDS and len(w) > 3]
-    freq        = Counter(content)
+    unique  = set(all_words)
+    content = [w for w in all_words if w not in STOPWORDS and len(w) > 3]
+    freq    = Counter(content)
 
-    # type–token ratio (on first 400 tokens to normalise length)
-    sample_400  = all_words[:400]
-    ttr         = round(len(set(sample_400)) / len(sample_400), 3) if sample_400 else 0
-
-    # signature words = medium frequency (not so rare they're noise, not stopwords)
+    sample_400 = all_words[:400]
+    ttr = round(len(set(sample_400)) / len(sample_400), 3) if sample_400 else 0
     sig = [w for w, c in freq.most_common(60) if 2 <= c <= 12][:15]
-
     avg_len = round(sum(len(w) for w in all_words) / len(all_words), 2)
 
-    return {
-        "ttr":              ttr,
-        "unique_words":     len(unique),
-        "total_words":      len(all_words),
-        "signature_words":  sig,
-        "avg_word_length":  avg_len,
-        "top_content_words": [w for w, _ in freq.most_common(10)],
-    }
+    return {"ttr": ttr, "unique_words": len(unique), "total_words": len(all_words),
+            "signature_words": sig, "avg_word_length": avg_len,
+            "top_content_words": [w for w, _ in freq.most_common(10)]}
 
 
 @app.route("/api/vocab-fingerprint", methods=["POST"])
 def api_vocab():
-    data    = request.get_json()
-    samples = data.get("samples", [])
-    return jsonify(vocab_fingerprint(samples))
+    data = request.get_json()
+    return jsonify(vocab_fingerprint(data.get("samples", [])))
 
 
 # ── FEATURE 3: Export to PDF ──────────────────────────────────────────────────
@@ -155,46 +141,43 @@ def api_export_pdf():
     pdf.set_margins(20, 20, 20)
     pdf.add_page()
 
-    # header
     pdf.set_font("Helvetica", "B", 18)
     pdf.set_text_color(83, 74, 183)
-    pdf.cell(0, 12, title, ln=True)
+    pdf.cell(0, 12, title, new_x="LMARGIN", new_y="NEXT")
 
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(136, 135, 128)
-    pdf.cell(0, 6, f"Generated by StyleMirror — {datetime.date.today()}", ln=True)
+    pdf.cell(0, 6, f"Generated by StyleMirror — {datetime.date.today()}",
+             new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
     pdf.line(20, pdf.get_y(), 190, pdf.get_y())
     pdf.ln(6)
 
-    # style score
     if score:
         pdf.set_font("Helvetica", "B", 10)
         pdf.set_text_color(44, 44, 42)
-        pdf.cell(0, 7, f"Style Match: {score.get('confidence', '?')}%", ln=True)
-        traits = ", ".join(score.get("traits", []))
+        pdf.cell(0, 7, f"Style Match: {score.get('confidence','?')}%",
+                 new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", "", 9)
         pdf.set_text_color(95, 94, 90)
-        pdf.multi_cell(0, 5, f"Traits: {traits}")
+        pdf.multi_cell(0, 5, "Traits: " + ", ".join(score.get("traits", [])))
         feedback = score.get("feedback", "")
         if feedback:
             pdf.set_font("Helvetica", "I", 9)
             pdf.multi_cell(0, 5, f'"{feedback}"')
         pdf.ln(4)
 
-    # seed
     pdf.set_font("Helvetica", "BI", 10)
     pdf.set_text_color(83, 74, 183)
-    pdf.cell(0, 6, "YOUR SEED", ln=True)
+    pdf.cell(0, 6, "YOUR SEED", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "I", 11)
     pdf.set_text_color(95, 94, 90)
     pdf.multi_cell(0, 6, seed)
     pdf.ln(4)
 
-    # continuation
     pdf.set_font("Helvetica", "BI", 10)
     pdf.set_text_color(83, 74, 183)
-    pdf.cell(0, 6, "CONTINUATION", ln=True)
+    pdf.cell(0, 6, "CONTINUATION", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 11)
     pdf.set_text_color(44, 44, 42)
     pdf.multi_cell(0, 6, cont)
@@ -206,37 +189,37 @@ def api_export_pdf():
                      as_attachment=True, download_name="stylemirror_export.pdf")
 
 
-# ── FEATURE 4: Session persistence (save / load sessions) ────────────────────
+# ── FEATURE 4: Session persistence ───────────────────────────────────────────
 
 @app.route("/api/sessions", methods=["GET"])
 def list_sessions():
     with get_db() as conn:
         rows = conn.execute(
-            "SELECT id, title, profile, created_at, word_count FROM sessions ORDER BY created_at DESC LIMIT 30"
+            "SELECT id, title, profile, created_at, word_count FROM sessions "
+            "ORDER BY created_at DESC LIMIT 30"
         ).fetchall()
     return jsonify([dict(r) for r in rows])
 
 
 @app.route("/api/sessions", methods=["POST"])
 def save_session():
-    data   = request.get_json()
-    sid    = hashlib.sha256(
-        (data.get("seed","") + str(datetime.datetime.now())).encode()
+    data  = request.get_json()
+    sid   = hashlib.sha256(
+        (data.get("seed", "") + str(datetime.datetime.now())).encode()
     ).hexdigest()[:12]
-    title  = data.get("title") or f"Session {datetime.date.today()}"
+    title = data.get("title") or f"Session {datetime.date.today()}"
     with get_db() as conn:
-        conn.execute("""
-            INSERT INTO sessions (id, title, profile, seed, continuation, samples_json, score_json, word_count)
-            VALUES (?,?,?,?,?,?,?,?)
-        """, (
-            sid, title,
-            data.get("profile", "reflective"),
-            data.get("seed",""),
-            data.get("continuation",""),
-            json.dumps(data.get("samples", [])),
-            json.dumps(data.get("score", {})),
-            len(re.findall(r"\b\w+\b", data.get("continuation",""))),
-        ))
+        conn.execute(
+            "INSERT INTO sessions "
+            "(id, title, profile, seed, continuation, samples_json, score_json, word_count) "
+            "VALUES (?,?,?,?,?,?,?,?)",
+            (sid, title,
+             data.get("profile", "reflective"),
+             data.get("seed", ""),
+             data.get("continuation", ""),
+             json.dumps(data.get("samples", [])),
+             json.dumps(data.get("score", {})),
+             len(re.findall(r"\b\w+\b", data.get("continuation", "")))))
     return jsonify({"id": sid, "title": title})
 
 
@@ -259,13 +242,12 @@ def delete_session(sid):
     return jsonify({"deleted": sid})
 
 
-# ── FEATURE 5: Originality / self-plagiarism check ───────────────────────────
+# ── FEATURE 5: Originality check ─────────────────────────────────────────────
 
 def similarity_score(text_a: str, text_b: str) -> float:
-    """Jaccard similarity on 4-grams."""
     def ngrams(t, n=4):
         words = re.findall(r"\b[a-z]+\b", t.lower())
-        return set(tuple(words[i:i+n]) for i in range(len(words)-n+1))
+        return set(tuple(words[i:i+n]) for i in range(len(words) - n + 1))
     a, b = ngrams(text_a), ngrams(text_b)
     if not a or not b:
         return 0.0
@@ -274,27 +256,19 @@ def similarity_score(text_a: str, text_b: str) -> float:
 
 @app.route("/api/originality", methods=["POST"])
 def api_originality():
-    data         = request.get_json()
-    new_text     = data.get("text", "")
-    past_samples = data.get("samples", [])
-
-    scores = []
-    for s in past_samples:
-        sim = similarity_score(new_text, s.get("text",""))
-        scores.append({"title": s.get("title","Untitled"), "similarity": sim})
-
+    data     = request.get_json()
+    new_text = data.get("text", "")
+    scores   = []
+    for s in data.get("samples", []):
+        sim = similarity_score(new_text, s.get("text", ""))
+        scores.append({"title": s.get("title", "Untitled"), "similarity": sim})
     scores.sort(key=lambda x: x["similarity"], reverse=True)
-    max_sim = scores[0]["similarity"] if scores else 0.0
+    max_sim     = scores[0]["similarity"] if scores else 0.0
     originality = round((1 - max_sim) * 100, 1)
-
-    return jsonify({
-        "originality_pct": originality,
-        "flag": originality < 60,
-        "matches": scores,
-    })
+    return jsonify({"originality_pct": originality, "flag": originality < 60, "matches": scores})
 
 
-# ── health & startup ──────────────────────────────────────────────────────────
+# ── health ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/health")
 def health():
