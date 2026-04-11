@@ -911,28 +911,43 @@ function applyBg({ bg, surface, surface2, border, borderSoft, text, textMuted, t
 }
 
 const ColorPicker = ({ t }) => {
-  const [activeAccent, setActiveAccent] = useState(0);
-  const [activeBg,     setActiveBg]     = useState(0);
+  const [accentVal, setAccentVal] = useState("#7c6fcd");
+  const [bgVal,     setBgVal]     = useState("#faf9f7");
+
+  const applyCustomAccent = val => {
+    document.documentElement.style.setProperty("--accent", val);
+    document.documentElement.style.setProperty("--accent-light", val + "22");
+    document.documentElement.style.setProperty("--accent-mid",   val + "88");
+    document.documentElement.style.setProperty("--accent-dark",  val);
+  };
+
+  const applyCustomBg = val => {
+    document.documentElement.style.setProperty("--bg", val);
+    document.documentElement.style.setProperty("--surface", val);
+  };
+
+  const inputStyle = {
+    padding:"3px 7px", border:"1px solid var(--border)", borderRadius:6,
+    fontFamily:FONTS.mono, fontSize:12, color:"var(--text)",
+    background:"var(--surface-2)", width:90,
+  };
+
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+    <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
       <span style={{ fontSize:11, color:"var(--text-faint)", fontFamily:FONTS.ui }}>{t?.theme ?? "Theme"}</span>
-      {ACCENT_PRESETS.map((p, i) => (
-        <button key={p.label} title={p.label} onClick={() => { applyAccent(p); setActiveAccent(i); }} style={{
-          width:18, height:18, borderRadius:"50%", border: i===activeAccent ? "2px solid var(--text)" : "2px solid transparent",
-          background:p.accent, cursor:"pointer", padding:0, flexShrink:0,
-          boxShadow: i===activeAccent ? "0 0 0 2px var(--bg)" : "none",
-          outline:"none", transition:"box-shadow 0.15s, border-color 0.15s",
-        }}/>
-      ))}
+      <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+        <input type="color" value={accentVal} onChange={e => { setAccentVal(e.target.value); applyCustomAccent(e.target.value); }}
+          style={{ width:22, height:22, border:"none", padding:0, cursor:"pointer", background:"none" }}/>
+        <input value={accentVal} onChange={e => { setAccentVal(e.target.value); applyCustomAccent(e.target.value); }}
+          placeholder="#7c6fcd" style={inputStyle}/>
+      </div>
       <div style={{ width:1, height:14, background:"var(--border)", flexShrink:0 }}/>
-      {BG_PRESETS.map((p, i) => (
-        <button key={p.label} title={p.label} onClick={() => { applyBg(p); setActiveBg(i); }} style={{
-          width:18, height:18, borderRadius:4, border: i===activeBg ? "2px solid var(--text)" : "2px solid var(--border)",
-          background:p.bg, cursor:"pointer", padding:0, flexShrink:0,
-          boxShadow: i===activeBg ? "0 0 0 2px var(--accent)" : "none",
-          outline:"none", transition:"box-shadow 0.15s, border-color 0.15s",
-        }}/>
-      ))}
+      <div style={{ display:"flex", alignItems:"center", gap:4 }}>
+        <input type="color" value={bgVal} onChange={e => { setBgVal(e.target.value); applyCustomBg(e.target.value); }}
+          style={{ width:22, height:22, border:"none", padding:0, cursor:"pointer", background:"none" }}/>
+        <input value={bgVal} onChange={e => { setBgVal(e.target.value); applyCustomBg(e.target.value); }}
+          placeholder="#faf9f7" style={inputStyle}/>
+      </div>
     </div>
   );
 };
