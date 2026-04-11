@@ -72,7 +72,7 @@ cd stylemirror
 
 ---
 
-### 🪟 Windows
+## 🪟 Windows
 
 Open **two separate Command Prompt or PowerShell windows**.
 
@@ -95,7 +95,7 @@ Visit `http://localhost:5173` ✅
 
 ---
 
-### 🐧 Linux / macOS
+## 🐧 Linux / macOS
 
 Open **two separate terminal windows**.
 
@@ -118,7 +118,7 @@ Visit `http://localhost:5173` ✅
 
 ---
 
-### 📱 Android (Termux)
+## 📱 Android (Termux)
 
 StyleMirror can run entirely on Android using [Termux](https://termux.dev).
 
