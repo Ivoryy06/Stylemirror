@@ -63,73 +63,84 @@ The backend uses any OpenAI-compatible API. Set these environment variables:
 
 ## Installation
 
-> **Before you start:** grab an API key from [OpenAI](https://platform.openai.com/api-keys), [Groq](https://console.groq.com) (free), or any other provider listed in the [LLM Providers](#llm-providers) table above.
+You'll need a free API key for the AI features. [Groq](https://console.groq.com) is the easiest — free, no credit card. [OpenAI](https://platform.openai.com/api-keys) and [Mistral](https://console.mistral.ai) also work. To run fully locally with no key, see [Ollama](#ollama-no-key-needed) below.
 
 ---
 
 ### 🪟 Windows
 
-1. Install [Node.js 18+](https://nodejs.org) and [Python 3.11+](https://www.python.org/downloads/)
-2. Clone the repo and open a terminal inside it
-3. Run:
+**You'll need:** [Node.js 18+](https://nodejs.org) · [Python 3.11+](https://www.python.org/downloads/) · [Git](https://git-scm.com)
 
 ```bat
-copy .env.example .env
-:: Open .env and paste your OPENAI_API_KEY
+git clone https://github.com/your-username/stylemirror.git
+cd stylemirror
+```
 
+**Terminal 1 — backend** (runs on port 8787):
+```bat
 cd server
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+set OPENAI_API_KEY=your-key-here
 python app.py
 ```
 
-4. Open a **second terminal** in the project root:
-
+**Terminal 2 — frontend** (runs on port 5173):
 ```bat
+cd stylemirror
 npm install
 npm run dev
 ```
 
-5. Visit `http://localhost:5173` ✅
+Visit `http://localhost:5173` ✅
 
 ---
 
 ### 🐧 Linux / macOS
 
-1. Install [Node.js 18+](https://nodejs.org) and [Python 3.11+](https://www.python.org/downloads/)
-2. Clone the repo and open a terminal inside it
-3. Run:
+**You'll need:** [Node.js 18+](https://nodejs.org) · [Python 3.11+](https://www.python.org/downloads/) · [Git](https://git-scm.com)
 
 ```bash
-cp .env.example .env
-# Open .env and paste your OPENAI_API_KEY
+git clone https://github.com/your-username/stylemirror.git
+cd stylemirror
+```
 
+**Terminal 1 — backend** (runs on port 8787):
+```bash
 cd server
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-python app.py
+OPENAI_API_KEY=your-key-here python3 app.py
 ```
 
-4. Open a **second terminal** in the project root:
-
+**Terminal 2 — frontend** (runs on port 5173):
 ```bash
+cd stylemirror
 npm install
 npm run dev
 ```
 
-5. Visit `http://localhost:5173` ✅
+Visit `http://localhost:5173` ✅
+
+#### Ollama (no key needed)
+
+If you have [Ollama](https://ollama.com) running locally, replace the backend start command with:
+
+```bash
+OPENAI_API_KEY=ollama OPENAI_BASE_URL=http://localhost:11434/v1 LLM_MODEL=llama3 python3 app.py
+```
 
 ---
 
 ### 📱 Android / iOS
 
-StyleMirror is a web app — no app store install needed. To use it on mobile:
+StyleMirror is a web app — no app store needed. To use it on mobile, deploy it first:
 
-1. **Deploy the backend** to a cloud provider (see [Deployment](#deployment) below)
-2. **Deploy the frontend** to Vercel or Netlify, setting `VITE_API_BASE` to your backend URL
-3. Open the deployed URL in your mobile browser (Chrome on Android, Safari on iOS) ✅
+1. Deploy the backend to [Railway](https://railway.app) (see [Deployment](#deployment) below) and set `OPENAI_API_KEY` in the dashboard
+2. Deploy the frontend to [Vercel](https://vercel.com), setting `VITE_API_BASE` to your Railway URL
+3. Open the Vercel URL in your mobile browser ✅
 
 ---
 
@@ -197,21 +208,23 @@ Set `VITE_API_BASE` to your deployed backend URL (e.g. `https://your-app.railway
 ## Project Structure
 
 ```
-Stylemirror/
+stylemirror/
 ├── StyleMirror.jsx       # Main React component (all UI + i18n)
 ├── index.html
-├── vite.config.js
-├── Procfile              # For Railway / Render / Heroku
-├── .env.example          # Environment variable template
+├── vite.config.js        # Dev server on :5173, proxies /api → :8787
+├── package.json
+├── Procfile              # For Railway / Render
+├── .env.example
 ├── src/
 │   ├── main.jsx
 │   └── index.css
 ├── server/
-│   ├── app.py            # Flask API
-│   ├── schema.sql        # SQLite schema
-│   └── requirements.txt
+│   ├── app.py            # Flask API — runs on port 8787
+│   ├── schema.sql
+│   ├── requirements.txt
+│   └── stylemirror.db    # Created automatically on first run
 ├── scripts/
-│   └── install.sh
+│   └── install.sh        # Optional one-shot installer
 └── public/
 ```
 

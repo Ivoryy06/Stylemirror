@@ -395,29 +395,41 @@ LLM_BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
 LLM_MODEL    = os.environ.get("LLM_MODEL", "gpt-4o-mini")
 
 
+@app.route("/api/config")
+def api_config():
+    """Let the frontend know whether a server-side key is already configured."""
+    return jsonify({"key_configured": bool(LLM_API_KEY)})
+
+
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
     import urllib.request, urllib.error, json as _json
     from flask import Response, stream_with_context
 
-    if not LLM_API_KEY:
-        return jsonify({"error": "OPENAI_API_KEY not set"}), 503
+    data = request.get_json()
 
-    data     = request.get_json()
+    # Key priority: env var → request body (user-supplied from UI)
+    key      = LLM_API_KEY or data.get("api_key", "")
+    base_url = data.get("base_url") or LLM_BASE_URL
+    model    = data.get("model") or LLM_MODEL
+
+    if not key:
+        return jsonify({"error": "No API key configured. Enter your key in the Settings panel."}), 503
+
     messages = [{"role": "system", "content": data.get("system", "")}] + data.get("messages", [])
     payload  = _json.dumps({
-        "model":      LLM_MODEL,
+        "model":      model,
         "messages":   messages,
         "stream":     True,
         "max_tokens": data.get("max_tokens", 1000),
     }).encode()
 
     req = urllib.request.Request(
-        f"{LLM_BASE_URL}/chat/completions",
+        f"{base_url}/chat/completions",
         data=payload,
         headers={
             "Content-Type":  "application/json",
-            "Authorization": f"Bearer {LLM_API_KEY}",
+            "Authorization": f"Bearer {key}",
         },
         method="POST",
     )
