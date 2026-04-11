@@ -2,13 +2,13 @@
 
 A writing assistant that learns your voice. Paste samples of your writing, and StyleMirror continues new pieces in your exact style — analyzing readability, vocabulary fingerprint, and originality along the way. All within your own local network.
 
-Built with React + Vite (frontend) and Python/Flask (backend), powered by the Claude API.
+Built with React + Vite (frontend) and Python/Flask (backend), powered by Ollama (fully local, no API key needed).
 
 ---
 
 ## Features
 
-- **Style continuation** — generates new writing that matches your tone, voice, and vocabulary using Claude
+- **Style continuation** — generates new writing that matches your tone, voice, and vocabulary using Ollama
 - **Readability scoring** — Flesch–Kincaid readability and grade level analysis
 - **Vocabulary fingerprint** — type-token ratio, signature words, and content word frequency
 - **Originality check** — n-gram similarity comparison against your own samples
@@ -24,7 +24,7 @@ Built with React + Vite (frontend) and Python/Flask (backend), powered by the Cl
 | Frontend | React 18, Vite, plain CSS   |
 | Backend  | Python 3.11+, Flask 3.x     |
 | Database | SQLite (via `schema.sql`)   |
-| AI       | Anthropic Claude API        |
+| AI       | Ollama (local)              |
 | PDF      | fpdf2 (optional)            |
 
 ---
@@ -35,18 +35,27 @@ Built with React + Vite (frontend) and Python/Flask (backend), powered by the Cl
 
 - Node.js 18+
 - Python 3.11+
-- An [Anthropic API key](https://console.anthropic.com/)
+- [Ollama](https://ollama.com) installed and running locally
 
-### 1. Backend
+### 1. Ollama
+
+```bash
+# Install from https://ollama.com, then:
+ollama pull llama3
+ollama serve
+```
+
+### 2. Backend
 
 ```bash
 cd server
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-ant-...
 python app.py
 ```
+
+> To use a different model: `export OLLAMA_MODEL=mistral` (or any model you've pulled)
 
 The API will be available at `http://localhost:8787`.
 
@@ -67,7 +76,7 @@ The app will be available at `http://localhost:5173`.
 
 | Method | Endpoint                 | Description                        |
 |--------|--------------------------|------------------------------------|
-| POST   | `/api/generate`          | Proxy Claude API call (streams)    |
+| POST   | `/api/generate`          | Proxy Ollama call (streams)        |
 | POST   | `/api/readability`       | Flesch–Kincaid scores for text     |
 | POST   | `/api/vocab-fingerprint` | Vocabulary analysis for samples    |
 | POST   | `/api/export-pdf`        | Export session as PDF              |

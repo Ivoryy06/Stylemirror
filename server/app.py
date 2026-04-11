@@ -268,37 +268,39 @@ def api_originality():
     return jsonify({"originality_pct": originality, "flag": originality < 60, "matches": scores})
 
 
-# ── FEATURE 6: Anthropic proxy (keeps API key server-side) ───────────────────
+# ── FEATURE 6: Ollama proxy (fully local, no API key needed) ─────────────────
+
+OLLAMA_URL   = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3")
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
-    import urllib.request, urllib.error
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        return jsonify({"error": "ANTHROPIC_API_KEY not set on server"}), 500
+    import urllib.request, urllib.error, json as _json
+    from flask import Response, stream_with_context
 
-    payload = request.get_data()
+    data     = request.get_json()
+    messages = [{"role": "system", "content": data.get("system", "")}] + data.get("messages", [])
+    payload  = _json.dumps({"model": OLLAMA_MODEL, "messages": messages, "stream": True}).encode()
+
     req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages",
+        f"{OLLAMA_URL}/api/chat",
         data=payload,
-        headers={
-            "Content-Type":      "application/json",
-            "x-api-key":         api_key,
-            "anthropic-version": "2023-06-01",
-        },
+        headers={"Content-Type": "application/json"},
         method="POST",
     )
     try:
         resp = urllib.request.urlopen(req)
-    except urllib.error.HTTPError as e:
-        return jsonify({"error": e.read().decode()}), e.code
+    except urllib.error.URLError as e:
+        return jsonify({"error": f"Ollama not reachable: {e.reason}"}), 502
 
-    from flask import Response, stream_with_context
     def stream():
-        while chunk := resp.read(512):
-            yield chunk
-    return Response(stream_with_context(stream()),
-                    content_type=resp.headers.get("Content-Type", "text/event-stream"))
+        for raw in resp:
+            chunk = _json.loads(raw.decode().strip())
+            text  = chunk.get("message", {}).get("content", "")
+            if text:
+                yield f"data: {_json.dumps({'type':'content_block_delta','delta':{'text':text}})}\n\n"
+
+    return Response(stream_with_context(stream()), content_type="text/event-stream")
 
 
 # ── health ────────────────────────────────────────────────────────────────────

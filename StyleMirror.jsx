@@ -522,7 +522,7 @@ export default function StyleMirror() {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
-          model:      "claude-sonnet-4-20250514",
+          model:      "llama3",
           max_tokens: 1500,
           stream:     true,
           system:     SYSTEM_PROMPT(STYLE_PROFILES[profile].prompt, sampleText),
