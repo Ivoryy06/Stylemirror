@@ -63,39 +63,75 @@ The backend uses any OpenAI-compatible API. Set these environment variables:
 
 ## Setup — Local
 
-### Prerequisites
-- [Node.js 18+](https://nodejs.org)
-- [Python 3.11+](https://www.python.org/downloads/)
-- An API key from any provider above
+### 🪟 Windows
 
-### 1. Configure environment
+**Prerequisites:** [Node.js 18+](https://nodejs.org), [Python 3.11+](https://www.python.org/downloads/), an API key
 
-```bash
-cp .env.example .env
-# edit .env and set OPENAI_API_KEY (and optionally OPENAI_BASE_URL / LLM_MODEL)
+**1. Configure environment**
+```bat
+copy .env.example .env
+:: edit .env and set OPENAI_API_KEY (and optionally OPENAI_BASE_URL / LLM_MODEL)
 ```
 
-### 2. Start the backend
-
-```bash
+**2. Start the backend**
+```bat
 cd server
-python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
 
-The API will be available at `http://localhost:8787`.
-
-### 3. Start the frontend
-
-```bash
-# in the project root
+**3. Start the frontend**
+```bat
+cd ..
 npm install
 npm run dev
 ```
 
 Open `http://localhost:5173` in your browser.
+
+---
+
+### 🐧 Linux / macOS
+
+**Prerequisites:** [Node.js 18+](https://nodejs.org), [Python 3.11+](https://www.python.org/downloads/), an API key
+
+**1. Configure environment**
+```bash
+cp .env.example .env
+# edit .env and set OPENAI_API_KEY (and optionally OPENAI_BASE_URL / LLM_MODEL)
+```
+
+**2. Start the backend**
+```bash
+cd server
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+
+**3. Start the frontend**
+```bash
+cd ..
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` in your browser.
+
+---
+
+### 📱 Android / iOS
+
+StyleMirror does not have a native mobile app. To use it on Android or iOS:
+
+1. **Deploy the backend** to a cloud provider (see [Deployment](#deployment) below) so it's reachable over the internet.
+2. **Deploy the frontend** to Vercel or Netlify and set `VITE_API_BASE` to your backend URL.
+3. Open the deployed frontend URL in your mobile browser (Chrome on Android, Safari on iOS).
+
+The web app is fully responsive and works in mobile browsers without any installation required.
 
 ---
 
