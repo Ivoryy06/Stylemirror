@@ -268,7 +268,119 @@ def api_originality():
     return jsonify({"originality_pct": originality, "flag": originality < 60, "matches": scores})
 
 
-# ── FEATURE 6: Ollama proxy (fully local, no API key needed) ─────────────────
+# ── FEATURE 6: Tone / mood analysis ─────────────────────────────────────────
+
+TONE_LEXICON = {
+    "joyful":     ["happy","joy","delight","wonderful","love","beautiful","bright","hope","laugh","smile","warm","celebrate","grateful","bliss","elated"],
+    "melancholic":["sad","loss","grief","lonely","empty","hollow","ache","mourn","sorrow","miss","fade","gone","tears","heavy","quiet"],
+    "anxious":    ["worry","fear","dread","uncertain","nervous","tense","panic","overwhelm","restless","uneasy","doubt","fragile","edge","spiral"],
+    "angry":      ["anger","rage","furious","bitter","resent","frustrat","injust","betray","disgust","hostile","harsh","blunt","sharp","cold"],
+    "contemplative":["wonder","reflect","ponder","question","perhaps","maybe","consider","think","meaning","truth","understand","seek","why","how"],
+    "confident":  ["certain","clear","strong","bold","decisive","direct","assert","know","will","must","power","lead","stand","resolve"],
+}
+
+def tone_analysis(text: str) -> dict:
+    words = re.findall(r"\b[a-z]+\b", text.lower())
+    if not words:
+        return {"dominant": "neutral", "scores": {}, "intensity": 0}
+    scores = {}
+    for tone, lexicon in TONE_LEXICON.items():
+        count = sum(1 for w in words if any(w.startswith(stem) for stem in lexicon))
+        scores[tone] = round(count / len(words) * 100, 2)
+    dominant  = max(scores, key=scores.get)
+    intensity = round(min(100, scores[dominant] * 12), 1)
+    if intensity < 3:
+        dominant = "neutral"
+    return {"dominant": dominant, "scores": scores, "intensity": intensity}
+
+
+@app.route("/api/tone", methods=["POST"])
+def api_tone():
+    data = request.get_json()
+    texts = data.get("texts", [])
+    if isinstance(texts, list):
+        return jsonify([tone_analysis(t) for t in texts])
+    return jsonify(tone_analysis(data.get("text", "")))
+
+
+# ── FEATURE 7: Sentence structure fingerprint ────────────────────────────────
+
+def structure_fingerprint(text: str) -> dict:
+    sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
+    if not sentences:
+        return {}
+    lengths   = [len(re.findall(r"\b\w+\b", s)) for s in sentences]
+    avg       = sum(lengths) / len(lengths)
+    variance  = round(sum((l - avg) ** 2 for l in lengths) / len(lengths), 1)
+
+    # punctuation habits
+    em_dashes    = len(re.findall(r"—", text))
+    semicolons   = len(re.findall(r";", text))
+    ellipses     = len(re.findall(r"\.\.\.", text))
+    questions    = len(re.findall(r"\?", text))
+    exclamations = len(re.findall(r"!", text))
+
+    # paragraph rhythm
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+    para_lens  = [len(re.findall(r"\b\w+\b", p)) for p in paragraphs]
+
+    return {
+        "sentence_count":    len(sentences),
+        "avg_length":        round(avg, 1),
+        "length_variance":   variance,
+        "short_ratio":       round(sum(1 for l in lengths if l <= 10) / len(lengths), 2),
+        "long_ratio":        round(sum(1 for l in lengths if l >= 30) / len(lengths), 2),
+        "em_dashes":         em_dashes,
+        "semicolons":        semicolons,
+        "ellipses":          ellipses,
+        "questions":         questions,
+        "exclamations":      exclamations,
+        "paragraph_count":   len(paragraphs),
+        "avg_para_words":    round(sum(para_lens) / len(para_lens), 1) if para_lens else 0,
+    }
+
+
+def structure_drift(samples_text: str, continuation_text: str) -> dict:
+    """Compare structural fingerprint of samples vs continuation."""
+    s = structure_fingerprint(samples_text)
+    c = structure_fingerprint(continuation_text)
+    if not s or not c:
+        return {"drift_score": 0, "flags": []}
+
+    flags = []
+    drift = 0
+
+    len_diff = abs(s["avg_length"] - c["avg_length"])
+    if len_diff > 8:
+        drift += 30
+        flags.append(f"Sentence length shifted by {len_diff:.0f}w (samples: {s['avg_length']}w → continuation: {c['avg_length']}w)")
+
+    var_diff = abs(s["length_variance"] - c["length_variance"])
+    if var_diff > 40:
+        drift += 20
+        flags.append("Sentence rhythm variety changed significantly")
+
+    for mark, label in [("em_dashes","em-dash"), ("semicolons","semicolon"), ("ellipses","ellipsis")]:
+        sv = s.get(mark, 0); cv = c.get(mark, 0)
+        if sv == 0 and cv >= 3:
+            drift += 15
+            flags.append(f"New {label} usage not present in samples")
+        elif sv >= 2 and cv == 0:
+            drift += 10
+            flags.append(f"Missing {label} usage common in your samples")
+
+    return {"drift_score": min(100, drift), "flags": flags, "sample_struct": s, "cont_struct": c}
+
+
+@app.route("/api/structure", methods=["POST"])
+def api_structure():
+    data = request.get_json()
+    if "samples_text" in data and "continuation_text" in data:
+        return jsonify(structure_drift(data["samples_text"], data["continuation_text"]))
+    return jsonify(structure_fingerprint(data.get("text", "")))
+
+
+# ── FEATURE 8: Ollama proxy (fully local, no API key needed) ─────────────────
 
 OLLAMA_URL   = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3")
