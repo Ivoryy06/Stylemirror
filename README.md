@@ -1,8 +1,8 @@
 # StyleMirror
 
-A writing assistant that learns your voice. Paste samples of your writing, seed a new piece, and StyleMirror continues it in your exact style.
+A writing assistant that learns your voice. Paste samples of your writing, seed a new piece, and StyleMirror continues it in your exact style — fully local, no API keys, no subscriptions.
 
-Built with **React + Vite** (frontend) and **Python / Flask** (backend), powered by any **OpenAI-compatible LLM API**.
+Powered by **[Ollama](https://ollama.com)** running on your own machine.
 
 ---
 
@@ -34,61 +34,59 @@ Built with **React + Vite** (frontend) and **Python / Flask** (backend), powered
 |---|---|
 | Frontend | React 18, Vite 5 |
 | Backend | Python 3.11+, Flask 3.x |
-| Database | SQLite (`schema.sql`) |
-| AI | Any OpenAI-compatible API (OpenAI, Groq, Mistral, Ollama) |
+| Database | SQLite |
+| AI | Ollama (local) |
 | PDF | fpdf2 |
 
 ---
 
-## LLM Providers
+## Requirements
 
-The backend uses any OpenAI-compatible API. Set these environment variables:
-
-| Variable | Description | Default |
-|---|---|---|
-| `OPENAI_API_KEY` | Your API key | *(required)* |
-| `OPENAI_BASE_URL` | API base URL | `https://api.openai.com/v1` |
-| `LLM_MODEL` | Model name | `gpt-4o-mini` |
-
-**Provider examples:**
-
-| Provider | `OPENAI_BASE_URL` | `LLM_MODEL` | Notes |
-|---|---|---|---|
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` | |
-| Groq | `https://api.groq.com/openai/v1` | `llama3-8b-8192` | Free tier |
-| Mistral | `https://api.mistral.ai/v1` | `mistral-small-latest` | Free tier |
-| Ollama (local) | `http://localhost:11434/v1` | `llama3` | No key needed — set `OPENAI_API_KEY=ollama` |
+- [Ollama](https://ollama.com) — runs the AI model locally
+- [Node.js 18+](https://nodejs.org)
+- [Python 3.11+](https://www.python.org/downloads/)
+- [Git](https://git-scm.com)
 
 ---
 
 ## Installation
 
-You'll need a free API key for the AI features. [Groq](https://console.groq.com) is the easiest — free, no credit card. [OpenAI](https://platform.openai.com/api-keys) and [Mistral](https://console.mistral.ai) also work. To run fully locally with no key, see [Ollama](#ollama-no-key-needed) below.
+### Step 1 — Install Ollama and pull a model
+
+Download Ollama from [ollama.com](https://ollama.com), install it, then run:
+
+```bash
+ollama pull llama3
+```
+
+That's the only AI setup needed. No accounts, no keys.
+
+---
+
+### Step 2 — Clone the repo
+
+```bash
+git clone https://github.com/your-username/stylemirror.git
+cd stylemirror
+```
 
 ---
 
 ### 🪟 Windows
 
-**You'll need:** [Node.js 18+](https://nodejs.org) · [Python 3.11+](https://www.python.org/downloads/) · [Git](https://git-scm.com)
+Open **two separate Command Prompt or PowerShell windows**.
 
-```bat
-git clone https://github.com/your-username/stylemirror.git
-cd stylemirror
-```
-
-**Terminal 1 — backend** (runs on port 8787):
+**Terminal 1 — backend** (run from the `server` folder):
 ```bat
 cd server
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
-set OPENAI_API_KEY=your-key-here
 python app.py
 ```
 
-**Terminal 2 — frontend** (runs on port 5173):
+**Terminal 2 — frontend** (run from the project root):
 ```bat
-cd stylemirror
 npm install
 npm run dev
 ```
@@ -99,81 +97,70 @@ Visit `http://localhost:5173` ✅
 
 ### 🐧 Linux / macOS
 
-**You'll need:** [Node.js 18+](https://nodejs.org) · [Python 3.11+](https://www.python.org/downloads/) · [Git](https://git-scm.com)
+Open **two separate terminal windows**.
 
-```bash
-git clone https://github.com/your-username/stylemirror.git
-cd stylemirror
-```
-
-**Terminal 1 — backend** (runs on port 8787):
+**Terminal 1 — backend** (run from the `server` folder):
 ```bash
 cd server
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-OPENAI_API_KEY=your-key-here python3 app.py
+python3 app.py
 ```
 
-**Terminal 2 — frontend** (runs on port 5173):
+**Terminal 2 — frontend** (run from the project root):
 ```bash
-cd stylemirror
 npm install
 npm run dev
 ```
 
 Visit `http://localhost:5173` ✅
 
-#### Ollama (no key needed)
-
-If you have [Ollama](https://ollama.com) running locally, replace the backend start command with:
-
-```bash
-OPENAI_API_KEY=ollama OPENAI_BASE_URL=http://localhost:11434/v1 LLM_MODEL=llama3 python3 app.py
-```
-
 ---
 
-### 📱 Android / iOS
+### 📱 Android (Termux)
 
-StyleMirror is a web app — no app store needed. To use it on mobile, deploy it first:
+StyleMirror can run entirely on Android using [Termux](https://termux.dev).
 
-1. Deploy the backend to [Railway](https://railway.app) (see [Deployment](#deployment) below) and set `OPENAI_API_KEY` in the dashboard
-2. Deploy the frontend to [Vercel](https://vercel.com), setting `VITE_API_BASE` to your Railway URL
-3. Open the Vercel URL in your mobile browser ✅
+Install Termux from [F-Droid](https://f-droid.org/packages/com.termux/) (not the Play Store version — it's outdated).
 
----
+**All commands below are typed inside the Termux app.**
 
-## Deployment
-
-### Backend — Railway / Render / Fly.io
-
-The repo includes a `Procfile` for one-command deploys.
-
-**Railway (recommended):**
-
+**1. Install dependencies:**
 ```bash
-npm install -g @railway/cli
-railway login
-railway init
-railway up
+pkg update && pkg upgrade -y
+pkg install -y git nodejs python
 ```
 
-Then set environment variables in the Railway dashboard:
-- `OPENAI_API_KEY`
-- `OPENAI_BASE_URL` *(if not using OpenAI)*
-- `LLM_MODEL` *(if not using gpt-4o-mini)*
-
-**Render:** connect the repo, set root directory to `/`, build command to `pip install -r server/requirements.txt`, start command to `gunicorn --chdir server app:app`.
-
-### Frontend — Vercel / Netlify
-
+**2. Install Ollama for Android:**
 ```bash
-npm install -g vercel
-vercel
+pkg install -y ollama
+ollama serve &
+ollama pull llama3
 ```
 
-Set `VITE_API_BASE` to your deployed backend URL (e.g. `https://your-app.railway.app`) in the Vercel dashboard, then redeploy.
+> If `ollama` isn't available via `pkg`, install it via the [Ollama Linux ARM64 binary](https://ollama.com/download/linux) and place it in `~/bin`.
+
+**3. Clone and set up the backend** (still in Termux):
+```bash
+git clone https://github.com/your-username/stylemirror.git
+cd stylemirror/server
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py &
+```
+
+**4. Set up and run the frontend** (open a second Termux session with a long-press swipe, or use `tmux`):
+```bash
+cd ~/stylemirror
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` in your Android browser ✅
+
+> **Tip:** Use `tmux` to manage multiple sessions in one Termux window — `pkg install tmux`, then `tmux new-session` and split panes with `Ctrl+B %`.
 
 ---
 
@@ -183,6 +170,22 @@ Set `VITE_API_BASE` to your deployed backend URL (e.g. `https://your-app.railway
 2. **New Piece tab** — pick a style mode, write your opening sentences (30+ words), set an output length, then click *Continue in My Voice*.
 3. **Output tab** — review the continuation alongside readability, tone, structure, and originality analysis. Save the session or export to PDF.
 4. **Sessions tab** — reload any previously saved session.
+
+---
+
+## Configuration
+
+No configuration is required for local use. If you want to change the model or point to a remote Ollama instance, set these environment variables before starting the backend:
+
+| Variable | Default | Description |
+|---|---|---|
+| `LLM_MODEL` | `llama3` | Any model you've pulled with `ollama pull` |
+| `OPENAI_BASE_URL` | `http://localhost:11434/v1` | Ollama API URL |
+
+Example with a different model:
+```bash
+LLM_MODEL=mistral python3 app.py
+```
 
 ---
 
@@ -213,7 +216,6 @@ stylemirror/
 ├── index.html
 ├── vite.config.js        # Dev server on :5173, proxies /api → :8787
 ├── package.json
-├── Procfile              # For Railway / Render
 ├── .env.example
 ├── src/
 │   ├── main.jsx
@@ -224,7 +226,7 @@ stylemirror/
 │   ├── requirements.txt
 │   └── stylemirror.db    # Created automatically on first run
 ├── scripts/
-│   └── install.sh        # Optional one-shot installer
+│   └── install.sh        # Optional one-shot installer (Linux/macOS)
 └── public/
 ```
 

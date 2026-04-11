@@ -390,15 +390,15 @@ def api_structure():
 #                        local Ollama: http://localhost:11434/v1
 #   LLM_MODEL        — model name, default: gpt-4o-mini
 
-LLM_API_KEY  = os.environ.get("OPENAI_API_KEY", "")
-LLM_BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
-LLM_MODEL    = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+LLM_API_KEY  = os.environ.get("OPENAI_API_KEY", "ollama")   # Ollama ignores the key
+LLM_BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://localhost:11434/v1")
+LLM_MODEL    = os.environ.get("LLM_MODEL", "llama3")
 
 
 @app.route("/api/config")
 def api_config():
     """Let the frontend know whether a server-side key is already configured."""
-    return jsonify({"key_configured": bool(LLM_API_KEY)})
+    return jsonify({"key_configured": True})
 
 
 @app.route("/api/generate", methods=["POST"])
@@ -408,13 +408,10 @@ def api_generate():
 
     data = request.get_json()
 
-    # Key priority: env var → request body (user-supplied from UI)
-    key      = LLM_API_KEY or data.get("api_key", "")
+    # Key priority: env var → request body → default "ollama" (no key needed)
+    key      = LLM_API_KEY or data.get("api_key", "ollama")
     base_url = data.get("base_url") or LLM_BASE_URL
     model    = data.get("model") or LLM_MODEL
-
-    if not key:
-        return jsonify({"error": "No API key configured. Enter your key in the Settings panel."}), 503
 
     messages = [{"role": "system", "content": data.get("system", "")}] + data.get("messages", [])
     payload  = _json.dumps({

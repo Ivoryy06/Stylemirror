@@ -1519,9 +1519,9 @@ export default function StyleMirror() {
   const [lang,          setLang]         = useState("en_gb");
   const [outputLen,     setOutputLen]    = useState("medium");
   const [focusMode,     setFocusMode]    = useState(false);
-  const [apiKey,        setApiKey]       = useState(() => localStorage.getItem("sm_api_key") || "");
-  const [baseUrl,       setBaseUrl]      = useState(() => localStorage.getItem("sm_base_url") || "https://api.openai.com/v1");
-  const [llmModel,      setLlmModel]     = useState(() => localStorage.getItem("sm_model") || "gpt-4o-mini");
+  const [apiKey,        setApiKey]       = useState(() => localStorage.getItem("sm_api_key") || "ollama");
+  const [baseUrl,       setBaseUrl]      = useState(() => localStorage.getItem("sm_base_url") || "http://localhost:11434/v1");
+  const [llmModel,      setLlmModel]     = useState(() => localStorage.getItem("sm_model") || "llama3");
   const [showKeyModal,  setShowKeyModal] = useState(false);
   const [keyInput,      setKeyInput]     = useState("");
   const [baseUrlInput,  setBaseUrlInput] = useState("");
@@ -1536,18 +1536,8 @@ export default function StyleMirror() {
       .then(d => setBackendOk(!!d))
       .catch(() => setBackendOk(false));
 
-    // Check if server already has a key; if not and user has none, show setup modal
-    fetch(`${API_BASE}/api/config`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d && !d.key_configured && !localStorage.getItem("sm_api_key")) {
-          setKeyInput("");
-          setBaseUrlInput(localStorage.getItem("sm_base_url") || "https://api.openai.com/v1");
-          setModelInput(localStorage.getItem("sm_model") || "gpt-4o-mini");
-          setShowKeyModal(true);
-        }
-      })
-      .catch(() => {});
+    // Ollama is the default — no key modal needed
+    fetch(`${API_BASE}/api/config`).catch(() => {});
   }, []);
 
   const addSample = () => {
@@ -1560,7 +1550,6 @@ export default function StyleMirror() {
 
   const generate = useCallback(async () => {
     if (wordCount(seed) < 30) { setError(t.errorSeed); return; }
-    if (!apiKey) { setShowKeyModal(true); setKeyInput(""); setBaseUrlInput(baseUrl); setModelInput(llmModel); return; }
     setError(""); setResult(null); setStreamText(""); setStreaming(true);
     streamRef.current = "";
     const sampleText = samples.map((s, i) => `--- Sample ${i+1}: "${s.title}" ---\n${s.text}`).join("\n\n");
