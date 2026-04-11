@@ -685,6 +685,16 @@ const I18N = {
 
 const LANG_LABELS = { en_gb:"EN 🇬🇧", en_us:"EN 🇺🇸", id:"ID", ja:"JA", fr:"FR", es:"ES", de:"DE", pt:"PT", vi:"VI" };
 
+const useIsMobile = () => {
+  const [mobile, setMobile] = useState(() => window.innerWidth < 600);
+  useEffect(() => {
+    const fn = () => setMobile(window.innerWidth < 600);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return mobile;
+};
+
 
 // Accent colour presets — hue-shifted so light/mid/dark all derive from one hex
 const ACCENT_PRESETS = [
@@ -849,33 +859,77 @@ const Btn = ({ children, onClick, disabled, variant="ghost", style={} }) => {
 
 // ── Language Picker ───────────────────────────────────────────────────────────
 
-const LanguagePicker = ({ lang, setLang, t }) => (
-  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-    <span style={{ fontSize:11, color:"var(--text-faint)", fontFamily:FONTS.ui }}>{t.language}</span>
-    {Object.entries(LANG_LABELS).map(([code, label]) => (
-      <button key={code} onClick={() => setLang(code)} style={{
-        padding:"2px 7px", borderRadius:10, border:"1px solid",
-        borderColor: lang===code ? "var(--accent)" : "var(--border)",
-        background:  lang===code ? "var(--accent-light)" : "transparent",
-        color:       lang===code ? "var(--accent-dark)" : "var(--text-muted)",
-        fontSize:11, fontFamily:FONTS.ui, cursor:"pointer", fontWeight: lang===code ? 600 : 400,
-      }}>{label}</button>
-    ))}
-  </div>
-);
+const LanguagePicker = ({ lang, setLang, t }) => {
+  const mobile = useIsMobile();
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+      <span style={{ fontSize:11, color:"var(--text-faint)", fontFamily:FONTS.ui }}>{t.language}</span>
+      {mobile ? (
+        <select value={lang} onChange={e => setLang(e.target.value)} style={{
+          padding:"2px 6px", borderRadius:8, border:"1px solid var(--border)",
+          background:"var(--surface)", color:"var(--text)", fontSize:12, fontFamily:FONTS.ui, cursor:"pointer",
+        }}>
+          {Object.entries(LANG_LABELS).map(([code, label]) => (
+            <option key={code} value={code}>{label}</option>
+          ))}
+        </select>
+      ) : (
+        Object.entries(LANG_LABELS).map(([code, label]) => (
+          <button key={code} onClick={() => setLang(code)} style={{
+            padding:"2px 7px", borderRadius:10, border:"1px solid",
+            borderColor: lang===code ? "var(--accent)" : "var(--border)",
+            background:  lang===code ? "var(--accent-light)" : "transparent",
+            color:       lang===code ? "var(--accent-dark)" : "var(--text-muted)",
+            fontSize:11, fontFamily:FONTS.ui, cursor:"pointer", fontWeight: lang===code ? 600 : 400,
+          }}>{label}</button>
+        ))
+      )}
+    </div>
+  );
+};
 
 // ── Color Picker ──────────────────────────────────────────────────────────────
 
+const BG_PRESETS = [
+  { label:"Warm White",  bg:"#faf9f7", surface:"#ffffff", surface2:"#f5f3ef", border:"#e8e5df", borderSoft:"#f0ede7", text:"#3d3a35", textMuted:"#9b9690", textFaint:"#c4c0b8" },
+  { label:"Cool White",  bg:"#f7f8fa", surface:"#ffffff", surface2:"#f0f2f5", border:"#e2e6ec", borderSoft:"#eaedf2", text:"#2d3340", textMuted:"#8a90a0", textFaint:"#b8bdc8" },
+  { label:"Cream",       bg:"#fdf8f0", surface:"#fffcf5", surface2:"#f8f2e4", border:"#ede5d4", borderSoft:"#f4ede0", text:"#3a3020", textMuted:"#9a8e78", textFaint:"#c8bea8" },
+  { label:"Dark",        bg:"#1a1918", surface:"#242220", surface2:"#2e2c2a", border:"#3a3835", borderSoft:"#302e2c", text:"#e8e4de", textMuted:"#8a8680", textFaint:"#5a5650" },
+  { label:"Slate",       bg:"#1e2128", surface:"#262b34", surface2:"#2e3440", border:"#3a4050", borderSoft:"#343a48", text:"#d8dce8", textMuted:"#7a8098", textFaint:"#4a5068" },
+];
+
+function applyBg({ bg, surface, surface2, border, borderSoft, text, textMuted, textFaint }) {
+  const r = document.documentElement.style;
+  r.setProperty("--bg",          bg);
+  r.setProperty("--surface",     surface);
+  r.setProperty("--surface-2",   surface2);
+  r.setProperty("--border",      border);
+  r.setProperty("--border-soft", borderSoft);
+  r.setProperty("--text",        text);
+  r.setProperty("--text-muted",  textMuted);
+  r.setProperty("--text-faint",  textFaint);
+}
+
 const ColorPicker = ({ t }) => {
-  const [active, setActive] = useState(0);
+  const [activeAccent, setActiveAccent] = useState(0);
+  const [activeBg,     setActiveBg]     = useState(0);
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+    <div style={{ display:"flex", alignItems:"center", gap:10 }}>
       <span style={{ fontSize:11, color:"var(--text-faint)", fontFamily:FONTS.ui }}>{t?.theme ?? "Theme"}</span>
       {ACCENT_PRESETS.map((p, i) => (
-        <button key={p.label} title={p.label} onClick={() => { applyAccent(p); setActive(i); }} style={{
-          width:18, height:18, borderRadius:"50%", border: i===active ? "2px solid var(--text)" : "2px solid transparent",
+        <button key={p.label} title={p.label} onClick={() => { applyAccent(p); setActiveAccent(i); }} style={{
+          width:18, height:18, borderRadius:"50%", border: i===activeAccent ? "2px solid var(--text)" : "2px solid transparent",
           background:p.accent, cursor:"pointer", padding:0, flexShrink:0,
-          boxShadow: i===active ? "0 0 0 2px var(--bg)" : "none",
+          boxShadow: i===activeAccent ? "0 0 0 2px var(--bg)" : "none",
+          outline:"none", transition:"box-shadow 0.15s, border-color 0.15s",
+        }}/>
+      ))}
+      <div style={{ width:1, height:14, background:"var(--border)", flexShrink:0 }}/>
+      {BG_PRESETS.map((p, i) => (
+        <button key={p.label} title={p.label} onClick={() => { applyBg(p); setActiveBg(i); }} style={{
+          width:18, height:18, borderRadius:4, border: i===activeBg ? "2px solid var(--text)" : "2px solid var(--border)",
+          background:p.bg, cursor:"pointer", padding:0, flexShrink:0,
+          boxShadow: i===activeBg ? "0 0 0 2px var(--accent)" : "none",
           outline:"none", transition:"box-shadow 0.15s, border-color 0.15s",
         }}/>
       ))}
@@ -1504,6 +1558,7 @@ const FocusMode = ({ value, onChange, placeholder, onExit, t }) => (
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 export default function StyleMirror() {
+  const mobile = useIsMobile();
   const [tab,           setTab]          = useState("samples");
   const [samples,       setSamples]      = useState([]);
   const [sampleInput,   setSampleInput]  = useState("");
@@ -1609,7 +1664,7 @@ export default function StyleMirror() {
   const samplesText  = samples.map(s => s.text).join("\n\n");
 
   return (
-    <div style={{ fontFamily:FONTS.ui, maxWidth:820, margin:"0 auto", padding:"2rem 1.25rem" }}>
+    <div style={{ fontFamily:FONTS.ui, maxWidth:820, margin:"0 auto", padding: mobile ? "1rem 0.75rem" : "2rem 1.25rem" }}>
 
       {focusMode && (
         <FocusMode value={seed} onChange={setSeed} placeholder={t.seedPlaceholder} onExit={() => setFocusMode(false)} t={t}/>
@@ -1774,7 +1829,7 @@ export default function StyleMirror() {
             </Card>
           )}
 
-          <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:"var(--radius-md)", padding:"2rem 2.5rem", marginBottom:"1rem", boxShadow:"var(--shadow-sm)" }}>
+          <div style={{ background:"var(--surface)", border:"1px solid var(--border)", borderRadius:"var(--radius-md)", padding: mobile ? "1.25rem 1rem" : "2rem 2.5rem", marginBottom:"1rem", boxShadow:"var(--shadow-sm)" }}>
             <div style={{ fontSize:11, color:"var(--text-muted)", marginBottom:"1.5rem", letterSpacing:"0.06em", textTransform:"uppercase" }}>
               {t.yourSeed} · {STYLE_PROFILES[profile].icon} {STYLE_PROFILES[profile].label}
             </div>
@@ -1796,7 +1851,7 @@ export default function StyleMirror() {
           <StyleDriftPanel samplesText={samplesText} continuationText={result.text} t={t}/>
           <OriginalityCheck text={result.text} samples={samples} t={t}/>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginTop:"1rem", marginBottom:"1rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr", gap:8, marginTop:"1rem", marginBottom:"1rem" }}>
             <Btn onClick={() => navigator.clipboard.writeText(seed + "\n\n" + result.text)} variant="ghost" style={{ justifyContent:"center" }}>{t.copyText}</Btn>
             <ExportPDF seed={seed} continuation={result.text} score={result.score} profile={profile} t={t}/>
             <Btn onClick={() => { setResult(null); setSeed(""); setTab("write"); }} variant="ghost" style={{ justifyContent:"center" }}>{t.newPiece}</Btn>
