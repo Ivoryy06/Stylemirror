@@ -72,40 +72,25 @@ cd stylemirror
 
 ---
 
-## 🪟 Windows
+## 🖥️ Windows / Linux / macOS
 
-Open **two separate Command Prompt or PowerShell windows**.
-
-**Terminal 1 — backend** (run from the `server` folder):
-```bat
-cd server
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
-```
-
-**Terminal 2 — frontend** (run from the project root):
-```bat
-npm install
-npm run dev
-```
-
-Visit `http://localhost:5173` ✅
-
----
-
-## 🐧 Linux / macOS
-
-Open **two separate terminal windows**.
+Open **two separate terminals**.
 
 **Terminal 1 — backend** (run from the `server` folder):
 ```bash
 cd server
-python3 -m venv venv
-source venv/bin/activate
+
+# Create and activate the virtual environment:
+python -m venv venv                  # Windows
+python3 -m venv venv                 # Linux / macOS
+
+venv\Scripts\activate                # Windows
+source venv/bin/activate             # Linux / macOS
+
 pip install -r requirements.txt
-python3 app.py
+
+python app.py                        # Windows
+python3 app.py                       # Linux / macOS
 ```
 
 **Terminal 2 — frontend** (run from the project root):
