@@ -1102,47 +1102,71 @@ const ExportPDF = ({ seed, continuation, score, profile, t }) => {
   );
 };
 
+// ── localStorage session helpers ──────────────────────────────────────────────
+
+const LS_KEY = "stylemirror_sessions";
+
+const lsGetSessions = () => {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); }
+  catch { return []; }
+};
+
+const lsSaveSessions = sessions => localStorage.setItem(LS_KEY, JSON.stringify(sessions));
+
 // ── Feature 4: Sessions Panel ─────────────────────────────────────────────────
 
 const SessionsPanel = ({ onLoad, t }) => {
-  const [sessions, setSessions] = useState([]);
-  const [busy,     setBusy]     = useState(false);
+  const [sessions, setSessions] = useState(() => lsGetSessions());
   const [toast,    setToast]    = useState("");
+  const importRef = useRef(null);
 
-  const fetchSessions = async () => {
-    setBusy(true);
-    try {
-      const r = await fetch(`${API_BASE}/api/sessions`);
-      if (r.ok) setSessions(await r.json());
-      else setToast(t?.backendOffline ?? "Backend offline");
-    } catch { setToast(t?.backendOffline ?? "Could not reach backend"); }
-    finally { setBusy(false); }
+  const del = id => {
+    const updated = sessions.filter(s => s.id !== id);
+    lsSaveSessions(updated);
+    setSessions(updated);
   };
 
-  useEffect(() => { fetchSessions(); }, []);
-
-  const del = async id => {
-    try {
-      await fetch(`${API_BASE}/api/sessions/${id}`, { method:"DELETE" });
-      setSessions(prev => prev.filter(s => s.id !== id));
-    } catch { /* silent */ }
+  const load = id => {
+    const s = sessions.find(s => s.id === id);
+    if (s) onLoad(s);
   };
 
-  const load = async id => {
+  const exportData = () => {
+    const payload = JSON.stringify({ version:1, exported_at: new Date().toISOString(), sessions }, null, 2);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([payload], { type:"application/json" }));
+    a.download = "stylemirror_backup.json";
+    a.click();
+  };
+
+  const importData = async e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     try {
-      const r = await fetch(`${API_BASE}/api/sessions/${id}`);
-      if (r.ok) onLoad(await r.json());
-    } catch { /* silent */ }
+      const data = JSON.parse(await file.text());
+      const incoming = data.sessions ?? [];
+      const existing = lsGetSessions();
+      const existingIds = new Set(existing.map(s => s.id));
+      const merged = [...existing, ...incoming.filter(s => !existingIds.has(s.id))];
+      lsSaveSessions(merged);
+      setSessions(merged);
+      setToast(`✓ Imported ${incoming.length - (incoming.length - (merged.length - existing.length))} new sessions`);
+    } catch { setToast("Import failed — invalid file"); }
+    e.target.value = "";
   };
 
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"1rem" }}>
         <Label>{t?.savedSessions ?? "Saved Sessions"}</Label>
-        <Btn onClick={fetchSessions} variant="ghost">{busy && <Spinner/>} {t?.refresh ?? "Refresh"}</Btn>
+        <div style={{ display:"flex", gap:6 }}>
+          <Btn onClick={exportData} variant="ghost">↓ Export</Btn>
+          <Btn onClick={() => importRef.current?.click()} variant="ghost">↑ Import</Btn>
+          <input ref={importRef} type="file" accept=".json" style={{ display:"none" }} onChange={importData}/>
+        </div>
       </div>
-      {toast && <div style={{ fontSize:13, color:"var(--red)", background:"var(--red-bg)", padding:"8px 12px", borderRadius:"var(--radius-sm)", marginBottom:"1rem" }}>{toast}</div>}
-      {sessions.length === 0 && !busy && (
+      {toast && <div style={{ fontSize:13, color:"var(--green)", background:"var(--green-bg)", padding:"8px 12px", borderRadius:"var(--radius-sm)", marginBottom:"1rem" }}>{toast}</div>}
+      {sessions.length === 0 && (
         <p style={{ fontSize:13, color:"var(--text-muted)", fontFamily:FONTS.ui, textAlign:"center", padding:"2rem" }}>
           {t?.noSessions ?? "No sessions yet."}
         </p>
@@ -1267,21 +1291,23 @@ const SentenceHeatmap = ({ text, t }) => {
 
 const SaveSession = ({ seed, continuation, score, samples, profile, onSaved, t }) => {
   const [title, setTitle] = useState("");
-  const [busy,  setBusy]  = useState(false);
   const [toast, setToast] = useState("");
   const [open,  setOpen]  = useState(false);
 
-  const save = async () => {
-    setBusy(true);
-    try {
-      const r = await fetch(`${API_BASE}/api/sessions`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ title, seed, continuation, score, samples, profile }),
-      });
-      if (r.ok) { const d = await r.json(); setToast(`${t?.save ?? "Saved"}: ${d.title}`); setOpen(false); onSaved?.(); }
-      else setToast(t?.backendOffline ?? "Save failed");
-    } catch { setToast(t?.backendOffline ?? "Backend offline"); }
-    finally { setBusy(false); setTimeout(() => setToast(""), 3000); }
+  const save = () => {
+    const id = Math.random().toString(36).slice(2, 14);
+    const sessionTitle = title.trim() || `Session ${new Date().toLocaleDateString()}`;
+    const session = {
+      id, title: sessionTitle, profile, seed, continuation, score, samples,
+      word_count: continuation.trim().split(/\s+/).filter(Boolean).length,
+      created_at: new Date().toISOString(),
+    };
+    const existing = lsGetSessions();
+    lsSaveSessions([session, ...existing]);
+    setToast(`${t?.save ?? "Saved"}: ${sessionTitle}`);
+    setOpen(false);
+    onSaved?.();
+    setTimeout(() => setToast(""), 3000);
   };
 
   return (
@@ -1292,7 +1318,7 @@ const SaveSession = ({ seed, continuation, score, samples, profile, onSaved, t }
         <div style={{ display:"flex", gap:6 }}>
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder={t?.sessionTitle ?? "Session title…"}
             style={{ flex:1, padding:"8px 10px", border:"1px solid var(--border)", borderRadius:"var(--radius-sm)", fontFamily:FONTS.ui, fontSize:13, color:"var(--text)", background:"var(--surface-2)" }}/>
-          <Btn onClick={save} disabled={busy} variant="primary">{busy && <Spinner/>} {t?.save ?? "Save"}</Btn>
+          <Btn onClick={save} variant="primary">{t?.save ?? "Save"}</Btn>
           <Btn onClick={() => setOpen(false)} variant="ghost">✕</Btn>
         </div>
       )}

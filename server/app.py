@@ -242,6 +242,48 @@ def delete_session(sid):
     return jsonify({"deleted": sid})
 
 
+@app.route("/api/export", methods=["GET"])
+def export_data():
+    with get_db() as conn:
+        rows = conn.execute("SELECT * FROM sessions ORDER BY created_at ASC").fetchall()
+    sessions = []
+    for r in rows:
+        d = dict(r)
+        d["samples"] = json.loads(d.get("samples_json") or "[]")
+        d["score"]   = json.loads(d.get("score_json")   or "{}")
+        sessions.append(d)
+    payload = json.dumps({"version": 1, "exported_at": datetime.datetime.utcnow().isoformat(), "sessions": sessions})
+    buf = io.BytesIO(payload.encode())
+    return send_file(buf, mimetype="application/json",
+                     as_attachment=True, download_name="stylemirror_backup.json")
+
+
+@app.route("/api/import", methods=["POST"])
+def import_data():
+    try:
+        data = request.get_json()
+        sessions = data.get("sessions", [])
+    except Exception:
+        return jsonify({"error": "Invalid JSON"}), 400
+
+    imported = 0
+    with get_db() as conn:
+        for s in sessions:
+            try:
+                conn.execute(
+                    "INSERT OR IGNORE INTO sessions "
+                    "(id, title, profile, seed, continuation, samples_json, score_json, word_count, created_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?)",
+                    (s["id"], s.get("title","Untitled"), s.get("profile","reflective"),
+                     s.get("seed",""), s.get("continuation",""),
+                     json.dumps(s.get("samples",[])), json.dumps(s.get("score",{})),
+                     s.get("word_count",0), s.get("created_at", datetime.datetime.utcnow().isoformat())))
+                imported += 1
+            except Exception:
+                pass
+    return jsonify({"imported": imported, "total": len(sessions)})
+
+
 # ── FEATURE 5: Originality check ─────────────────────────────────────────────
 
 def similarity_score(text_a: str, text_b: str) -> float:
