@@ -1566,7 +1566,75 @@ const OutputLengthPicker = ({ value, onChange, t }) => (
   </div>
 );
 
-// ── Feature 10: Focus Mode ────────────────────────────────────────────────────
+// ── Feature 10: Dark/Light Mode Toggle ───────────────────────────────────────
+
+const DARK_PRESET  = { bg:"#1a1918", surface:"#242220", surface2:"#2e2c2a", border:"#3a3835", borderSoft:"#302e2c", text:"#e8e4de", textMuted:"#8a8680", textFaint:"#5a5650" };
+const LIGHT_PRESET = { bg:"#faf9f7", surface:"#ffffff", surface2:"#f5f3ef", border:"#e8e5df", borderSoft:"#f0ede7", text:"#3d3a35", textMuted:"#9b9690", textFaint:"#c4c0b8" };
+
+const ThemeToggle = () => {
+  const [dark, setDark] = useState(() => localStorage.getItem("sm_dark") === "1");
+  useEffect(() => { applyBg(dark ? DARK_PRESET : LIGHT_PRESET); }, [dark]);
+  const toggle = () => {
+    const next = !dark;
+    setDark(next);
+    localStorage.setItem("sm_dark", next ? "1" : "0");
+    applyBg(next ? DARK_PRESET : LIGHT_PRESET);
+  };
+  return (
+    <button onClick={toggle} title="Toggle dark/light" style={{
+      background:"none", border:"1px solid var(--border)", borderRadius:20,
+      padding:"3px 10px", cursor:"pointer", fontSize:13, color:"var(--text-muted)",
+    }}>
+      {dark ? "☀" : "☾"}
+    </button>
+  );
+};
+
+// ── Feature 11: Sample Quality Score ─────────────────────────────────────────
+
+const sampleQuality = (samples) => samples.map(s => {
+  const wc = wordCount(s.text);
+  const issues = [];
+  if (wc < 80)  issues.push("too short");
+  if (wc > 2000) issues.push("very long — consider trimming");
+  const words = s.text.toLowerCase().split(/\s+/);
+  const unique = new Set(words).size;
+  if (unique / words.length < 0.4) issues.push("repetitive vocabulary");
+  return { title: s.title, wc, issues, ok: issues.length === 0 };
+});
+
+const SampleQualityBadge = ({ sample }) => {
+  const q = sampleQuality([sample])[0];
+  if (q.ok) return <span style={{ fontSize:10, color:"var(--green)", marginLeft:6 }}>✓</span>;
+  return (
+    <span title={q.issues.join(", ")} style={{ fontSize:10, color:"var(--amber)", marginLeft:6, cursor:"help" }}>
+      ⚠ {q.issues[0]}
+    </span>
+  );
+};
+
+// ── Feature 12: Inline Edit + Re-analyse ─────────────────────────────────────
+
+const InlineEditor = ({ text, onSave }) => {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(text);
+  useEffect(() => { setVal(text); }, [text]);
+  if (!editing) return (
+    <Btn onClick={() => setEditing(true)} variant="ghost" style={{ fontSize:12, padding:"4px 10px" }}>✎ Edit</Btn>
+  );
+  return (
+    <div style={{ marginTop:8 }}>
+      <textarea value={val} onChange={e => setVal(e.target.value)} rows={10}
+        style={{ width:"100%", padding:"12px 14px", border:"1px solid var(--accent-mid)", borderRadius:"var(--radius-md)", fontFamily:"inherit", fontSize:15, lineHeight:1.9, color:"var(--text)", background:"var(--bg)", resize:"vertical", boxSizing:"border-box" }}/>
+      <div style={{ display:"flex", gap:6, marginTop:6 }}>
+        <Btn onClick={() => { onSave(val); setEditing(false); }} variant="primary">Save & Re-analyse</Btn>
+        <Btn onClick={() => { setVal(text); setEditing(false); }} variant="ghost">Cancel</Btn>
+      </div>
+    </div>
+  );
+};
+
+// ── Feature 13: Focus Mode ────────────────────────────────────────────────────
 
 const FocusMode = ({ value, onChange, placeholder, onExit, t }) => (
   <div style={{
@@ -1607,6 +1675,7 @@ export default function StyleMirror() {
   const [seed,          setSeed]         = useState("");
   const [profile,       setProfile]      = useState("reflective");
   const [result,        setResult]       = useState(null);
+  const [editedText,    setEditedText]   = useState(null); // inline-edited continuation
   const [streaming,     setStreaming]     = useState(false);
   const [streamText,    setStreamText]   = useState("");
   const [error,         setError]        = useState("");
@@ -1631,10 +1700,19 @@ export default function StyleMirror() {
       .then(r => r.ok ? r.json() : null)
       .then(d => setBackendOk(!!d))
       .catch(() => setBackendOk(false));
-
-    // Ollama is the default — no key modal needed
     fetch(`${API_BASE}/api/config`).catch(() => {});
+    // restore dark mode
+    if (localStorage.getItem("sm_dark") === "1") applyBg(DARK_PRESET);
+    // restore autosaved seed
+    const saved = localStorage.getItem("sm_autosave_seed");
+    if (saved) setSeed(saved);
   }, []);
+
+  // autosave seed
+  useEffect(() => {
+    const t = setTimeout(() => localStorage.setItem("sm_autosave_seed", seed), 600);
+    return () => clearTimeout(t);
+  }, [seed]);
 
   const addSample = () => {
     if (sampleInput.trim().length < 50) { setError(t.errorShort); return; }
@@ -1646,7 +1724,7 @@ export default function StyleMirror() {
 
   const generate = useCallback(async () => {
     if (wordCount(seed) < 30) { setError(t.errorSeed); return; }
-    setError(""); setResult(null); setStreamText(""); setStreaming(true);
+    setError(""); setResult(null); setEditedText(null); setStreamText(""); setStreaming(true);
     streamRef.current = "";
     const sampleText = samples.map((s, i) => `--- Sample ${i+1}: "${s.title}" ---\n${s.text}`).join("\n\n");
     const maxTokens  = OUTPUT_LENGTHS.find(o => o.key === outputLen)?.tokens ?? 1000;
@@ -1700,6 +1778,7 @@ export default function StyleMirror() {
     setTab("output");
   };
 
+  const displayText  = editedText ?? result?.text ?? "";
   const seedWords    = wordCount(seed);
   const visibleTabs  = TABS.filter(t => !t.resultOnly || result);
   const samplesText  = samples.map(s => s.text).join("\n\n");
@@ -1719,6 +1798,7 @@ export default function StyleMirror() {
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
           <LanguagePicker lang={lang} setLang={setLang} t={t}/>
+          <ThemeToggle/>
           <ColorPicker t={t}/>
           <span style={{ fontSize:11, padding:"3px 10px", borderRadius:20,
             background:  backendOk===null?"var(--surface-2)":backendOk?"var(--green-bg)":"var(--red-bg)",
@@ -1751,6 +1831,7 @@ export default function StyleMirror() {
                     <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                       <span style={{ fontSize:13, fontWeight:500, color:"var(--text)" }}>{s.title}</span>
                       <Pill>{wordCount(s.text)} words</Pill>
+                      <SampleQualityBadge sample={s}/>
                     </div>
                     <p style={{ fontSize:12, color:"var(--text-muted)", margin:"4px 0 0", lineHeight:1.5 }}>{s.text.slice(0, 120)}…</p>
                   </div>
@@ -1877,28 +1958,33 @@ export default function StyleMirror() {
             <p style={{ fontFamily:FONTS.body, fontSize:15, lineHeight:1.9, color:"var(--text-muted)", margin:"0 0 1.5rem", paddingBottom:"1.5rem", borderBottom:"1px solid var(--border-soft)", fontStyle:"italic" }}>
               {seed}
             </p>
-            <div style={{ fontSize:11, color:"var(--text-muted)", marginBottom:"1.2rem", letterSpacing:"0.06em", textTransform:"uppercase" }}>{t.continuation}</div>
-            <div style={{ fontFamily:FONTS.body, fontSize:15.5, lineHeight:2, color:"var(--text)", whiteSpace:"pre-wrap" }}>{result.text}</div>
+            <div style={{ fontSize:11, color:"var(--text-muted)", marginBottom:"1.2rem", letterSpacing:"0.06em", textTransform:"uppercase", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+              <span>{t.continuation}</span>
+              <span style={{ fontFamily:FONTS.mono }}>{wordCount(displayText)}w</span>
+            </div>
+            <div style={{ fontFamily:FONTS.body, fontSize:15.5, lineHeight:2, color:"var(--text)", whiteSpace:"pre-wrap" }}>{displayText}</div>
+            <InlineEditor text={displayText} onSave={v => setEditedText(v)}/>
           </div>
 
-          <ReadabilityPanel text={result.text} t={t}/>
-          <SentenceHeatmap text={result.text} t={t}/>
+          <ReadabilityPanel text={displayText} t={t}/>
+          <SentenceHeatmap text={displayText} t={t}/>
           <TonePanel
-            texts={[...samples.map(s => s.text), result.text]}
+            texts={[...samples.map(s => s.text), displayText]}
             labels={[...samples.map(s => s.title), t.continuation]}
             t={t}
           />
-          <StructurePanel text={result.text} label={t.continuation} t={t}/>
-          <StyleDriftPanel samplesText={samplesText} continuationText={result.text} t={t}/>
-          <OriginalityCheck text={result.text} samples={samples} t={t}/>
+          <StructurePanel text={displayText} label={t.continuation} t={t}/>
+          <StyleDriftPanel samplesText={samplesText} continuationText={displayText} t={t}/>
+          <OriginalityCheck text={displayText} samples={samples} t={t}/>
 
-          <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr", gap:8, marginTop:"1rem", marginBottom:"1rem" }}>
-            <Btn onClick={() => navigator.clipboard.writeText(seed + "\n\n" + result.text)} variant="ghost" style={{ justifyContent:"center" }}>{t.copyText}</Btn>
-            <ExportPDF seed={seed} continuation={result.text} score={result.score} profile={profile} t={t}/>
-            <Btn onClick={() => { setResult(null); setSeed(""); setTab("write"); }} variant="ghost" style={{ justifyContent:"center" }}>{t.newPiece}</Btn>
+          <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr 1fr", gap:8, marginTop:"1rem", marginBottom:"1rem" }}>
+            <Btn onClick={() => navigator.clipboard.writeText(seed + "\n\n" + displayText)} variant="ghost" style={{ justifyContent:"center" }}>{t.copyText}</Btn>
+            <ExportPDF seed={seed} continuation={displayText} score={result.score} profile={profile} t={t}/>
+            <Btn onClick={generate} disabled={streaming} variant="light" style={{ justifyContent:"center" }}>↺ Regenerate</Btn>
+            <Btn onClick={() => { setResult(null); setEditedText(null); setSeed(""); setTab("write"); }} variant="ghost" style={{ justifyContent:"center" }}>{t.newPiece}</Btn>
           </div>
 
-          <SaveSession seed={seed} continuation={result.text} score={result.score} samples={samples} profile={profile} onSaved={() => setTab("sessions")} t={t}/>
+          <SaveSession seed={seed} continuation={displayText} score={result.score} samples={samples} profile={profile} onSaved={() => setTab("sessions")} t={t}/>
 
           <div style={{ marginTop:"1rem", background:"var(--surface-2)", border:"1px solid var(--border)", borderRadius:"var(--radius-md)", overflow:"hidden" }}>
             <button onClick={() => setFeedbackOpen(v => !v)} style={{ width:"100%", padding:"12px 16px", background:"none", border:"none", cursor:"pointer", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center", fontFamily:FONTS.ui, fontSize:13, color:"var(--text-muted)" }}>
@@ -1916,7 +2002,7 @@ export default function StyleMirror() {
 
           <div style={{ marginTop:"1rem", padding:"12px 16px", background:"var(--green-bg)", border:"1px solid #a8d8b8", borderRadius:"var(--radius-md)", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <span style={{ fontSize:13, color:"var(--green)" }}>{t.addToProfileMsg}</span>
-            <Btn onClick={() => { setSamples(prev => [...prev, { title:`Generated ${new Date().toLocaleDateString()}`, text:seed+"\n\n"+result.text }]); setTab("samples"); }}
+            <Btn onClick={() => { setSamples(prev => [...prev, { title:`Generated ${new Date().toLocaleDateString()}`, text:seed+"\n\n"+displayText }]); setTab("samples"); }}
               variant="primary" style={{ background:"var(--green)", whiteSpace:"nowrap" }}>
               {t.addToProfile}
             </Btn>
