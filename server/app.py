@@ -426,25 +426,26 @@ def api_structure():
 #
 # Hybrid mode:
 #   offline / localhost → Ollama  (OPENAI_BASE_URL / LLM_MODEL)
-#   online              → provider chosen by frontend: "openai" or "gemini"
+#   online              → provider chosen by frontend: "groq"
 #
 # Env vars:
-#   OPENAI_API_KEY   — OpenAI / ChatGPT key
-#   GEMINI_API_KEY   — Google Gemini key
+#   GROQ_API_KEY     — Groq API key
 #   OPENAI_BASE_URL  — override base URL (default: http://localhost:11434/v1)
 #   LLM_MODEL        — default Ollama model (default: llama3)
 
 LLM_API_KEY  = os.environ.get("OPENAI_API_KEY", "ollama")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 LLM_BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://localhost:11434/v1")
 LLM_MODEL    = os.environ.get("LLM_MODEL", "llama3")
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+GROQ_MODEL    = "llama3-8b-8192"
 
 
 @app.route("/api/config")
 def api_config():
     return jsonify({
-        "key_configured":    bool(LLM_API_KEY and LLM_API_KEY != "ollama"),
-        "gemini_configured": bool(GEMINI_API_KEY),
+        "key_configured":  bool(LLM_API_KEY and LLM_API_KEY != "ollama"),
+        "groq_configured": bool(GROQ_API_KEY),
     })
 
 
@@ -534,12 +535,11 @@ def api_generate():
     max_tokens = data.get("max_tokens", 1000)
     messages   = [{"role": "system", "content": data.get("system", "")}] + data.get("messages", [])
 
-    if provider == "gemini":
-        key   = data.get("api_key") or GEMINI_API_KEY
+    if provider == "groq":
+        key   = data.get("api_key") or GROQ_API_KEY
         if not key:
-            return jsonify({"error": "Gemini API key required"}), 400
-        model = data.get("model") or "gemini-1.5-flash"
-        gen   = _stream_gemini(key, model, messages, max_tokens)
+            return jsonify({"error": "Groq API key required"}), 400
+        gen = _stream_openai_compat(GROQ_BASE_URL, key, GROQ_MODEL, messages, max_tokens)
     else:
         key      = data.get("api_key") or LLM_API_KEY
         base_url = data.get("base_url") or LLM_BASE_URL

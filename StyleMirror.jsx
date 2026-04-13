@@ -2076,9 +2076,9 @@ export default function StyleMirror() {
   const [keyInput,      setKeyInput]     = useState("");
   const [baseUrlInput,  setBaseUrlInput] = useState("");
   const [modelInput,    setModelInput]   = useState("");
-  // hybrid mode: "ollama" (offline/localhost) | "openai" | "gemini"
+  // hybrid mode: "ollama" (offline/localhost) | "groq"
   const [isOnline,      setIsOnline]     = useState(() => navigator.onLine);
-  const [provider,      setProvider]     = useState(() => localStorage.getItem("sm_provider") || "openai");
+  const [provider,      setProvider]     = useState(() => localStorage.getItem("sm_provider") || "groq");
   const [contextNote,   setContextNote]  = useState("");
   const t = I18N[lang];
   const streamRef = useRef("");
@@ -2133,12 +2133,9 @@ export default function StyleMirror() {
     if (activeProvider === "ollama") {
       body.base_url = baseUrl;
       body.model    = llmModel;
-    } else if (activeProvider === "openai") {
+    } else if (activeProvider === "groq") {
       body.api_key = apiKey;
-      body.model   = "gpt-4o-mini";
-    } else if (activeProvider === "gemini") {
-      body.api_key = apiKey;
-      body.model   = "gemini-1.5-flash";
+      body.model   = "llama3-8b-8192";
     }
 
     try {
@@ -2331,7 +2328,7 @@ export default function StyleMirror() {
               </span>
               {isOnline && (
                 <div style={{ display:"flex", gap:6 }}>
-                  {[["openai","ChatGPT"],["gemini","Gemini"]].map(([p, label]) => (
+                  {[["groq","Groq"]].map(([p, label]) => (
                     <button key={p} onClick={() => { setProvider(p); localStorage.setItem("sm_provider", p); }}
                       style={{ padding:"5px 14px", fontSize:12, cursor:"pointer", borderRadius:20, border:"1px solid",
                         background: provider===p ? "var(--accent)" : "var(--surface)",
@@ -2350,7 +2347,7 @@ export default function StyleMirror() {
                   type="password"
                   value={apiKey}
                   onChange={e => { setApiKey(e.target.value); localStorage.setItem("sm_api_key", e.target.value); }}
-                  placeholder={provider === "gemini" ? "Gemini API key…" : "OpenAI API key…"}
+                  placeholder="Groq API key (gsk_…)"
                   style={{ width:"100%", padding:"7px 10px", fontSize:12, border:"1px solid var(--border)", borderRadius:"var(--radius-sm)", fontFamily:FONTS.mono, color:"var(--text)", background:"var(--bg)", boxSizing:"border-box" }}
                 />
               </div>
