@@ -422,87 +422,254 @@ def api_structure():
     return jsonify(structure_fingerprint(data.get("text", "")))
 
 
-# ── FEATURE 8: LLM generation (OpenAI-compatible, streaming) ─────────────────
+# ── FEATURE 8: LLM generation ────────────────────────────────────────────────
 #
-# Set these environment variables:
-#   OPENAI_API_KEY   — your OpenAI key (or any OpenAI-compatible provider key)
-#   OPENAI_BASE_URL  — override for other providers, e.g.:
-#                        Anthropic via openai-compat: https://api.anthropic.com/v1
-#                        Groq:  https://api.groq.com/openai/v1
-#                        local Ollama: http://localhost:11434/v1
-#   LLM_MODEL        — model name, default: gpt-4o-mini
+# Hybrid mode:
+#   offline / localhost → Ollama  (OPENAI_BASE_URL / LLM_MODEL)
+#   online              → provider chosen by frontend: "openai" or "gemini"
+#
+# Env vars:
+#   OPENAI_API_KEY   — OpenAI / ChatGPT key
+#   GEMINI_API_KEY   — Google Gemini key
+#   OPENAI_BASE_URL  — override base URL (default: http://localhost:11434/v1)
+#   LLM_MODEL        — default Ollama model (default: llama3)
 
-LLM_API_KEY  = os.environ.get("OPENAI_API_KEY", "ollama")   # Ollama ignores the key
+LLM_API_KEY  = os.environ.get("OPENAI_API_KEY", "ollama")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 LLM_BASE_URL = os.environ.get("OPENAI_BASE_URL", "http://localhost:11434/v1")
 LLM_MODEL    = os.environ.get("LLM_MODEL", "llama3")
 
 
 @app.route("/api/config")
 def api_config():
-    """Let the frontend know whether a server-side key is already configured."""
-    return jsonify({"key_configured": True})
+    return jsonify({
+        "key_configured":    bool(LLM_API_KEY and LLM_API_KEY != "ollama"),
+        "gemini_configured": bool(GEMINI_API_KEY),
+    })
 
 
-@app.route("/api/generate", methods=["POST"])
-def api_generate():
+def _stream_openai_compat(base_url, key, model, messages, max_tokens):
+    """Stream from any OpenAI-compatible endpoint (Ollama, OpenAI, etc.)."""
     import urllib.request, urllib.error, json as _json
-    from flask import Response, stream_with_context
-
-    data = request.get_json()
-
-    # Key priority: env var → request body → default "ollama" (no key needed)
-    key      = LLM_API_KEY or data.get("api_key", "ollama")
-    base_url = data.get("base_url") or LLM_BASE_URL
-    model    = data.get("model") or LLM_MODEL
-
-    messages = [{"role": "system", "content": data.get("system", "")}] + data.get("messages", [])
-    payload  = _json.dumps({
-        "model":      model,
-        "messages":   messages,
-        "stream":     True,
-        "max_tokens": data.get("max_tokens", 1000),
+    payload = _json.dumps({
+        "model": model, "messages": messages,
+        "stream": True, "max_tokens": max_tokens,
     }).encode()
-
     req = urllib.request.Request(
-        f"{base_url}/chat/completions",
-        data=payload,
-        headers={
-            "Content-Type":  "application/json",
-            "Authorization": f"Bearer {key}",
-        },
+        f"{base_url}/chat/completions", data=payload,
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"},
         method="POST",
     )
     try:
         resp = urllib.request.urlopen(req)
     except urllib.error.HTTPError as e:
-        return jsonify({"error": f"LLM API error {e.code}: {e.read().decode()}"}), 502
+        raise RuntimeError(f"LLM API error {e.code}: {e.read().decode()}")
     except urllib.error.URLError as e:
-        return jsonify({"error": f"LLM not reachable: {e.reason}"}), 502
+        raise RuntimeError(f"LLM not reachable: {e.reason}")
+
+    for raw in resp:
+        line = raw.decode().strip()
+        if not line.startswith("data:"):
+            continue
+        s = line[5:].strip()
+        if s == "[DONE]":
+            break
+        try:
+            text = _json.loads(s)["choices"][0]["delta"].get("content", "")
+            if text:
+                yield text
+        except (KeyError, _json.JSONDecodeError):
+            pass
+
+
+def _stream_gemini(key, model, messages, max_tokens):
+    """Stream from Gemini generateContent (SSE)."""
+    import urllib.request, urllib.error, json as _json
+    # Convert messages → Gemini contents format
+    system_parts = [m["content"] for m in messages if m["role"] == "system"]
+    contents = [
+        {"role": "user" if m["role"] == "user" else "model", "parts": [{"text": m["content"]}]}
+        for m in messages if m["role"] != "system"
+    ]
+    body = {
+        "contents": contents,
+        "generationConfig": {"maxOutputTokens": max_tokens},
+    }
+    if system_parts:
+        body["systemInstruction"] = {"parts": [{"text": "\n".join(system_parts)}]}
+
+    gemini_model = model or "gemini-1.5-flash"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:streamGenerateContent?alt=sse&key={key}"
+    req = urllib.request.Request(
+        url, data=_json.dumps(body).encode(),
+        headers={"Content-Type": "application/json"}, method="POST",
+    )
+    try:
+        resp = urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"Gemini API error {e.code}: {e.read().decode()}")
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Gemini not reachable: {e.reason}")
+
+    for raw in resp:
+        line = raw.decode().strip()
+        if not line.startswith("data:"):
+            continue
+        try:
+            chunk = _json.loads(line[5:].strip())
+            text = chunk["candidates"][0]["content"]["parts"][0].get("text", "")
+            if text:
+                yield text
+        except (KeyError, IndexError, _json.JSONDecodeError):
+            pass
+
+
+@app.route("/api/generate", methods=["POST"])
+def api_generate():
+    import json as _json
+    from flask import Response, stream_with_context
+
+    data       = request.get_json()
+    provider   = data.get("provider", "ollama")
+    max_tokens = data.get("max_tokens", 1000)
+    messages   = [{"role": "system", "content": data.get("system", "")}] + data.get("messages", [])
+
+    if provider == "gemini":
+        key   = data.get("api_key") or GEMINI_API_KEY
+        if not key:
+            return jsonify({"error": "Gemini API key required"}), 400
+        model = data.get("model") or "gemini-1.5-flash"
+        gen   = _stream_gemini(key, model, messages, max_tokens)
+    else:
+        key      = data.get("api_key") or LLM_API_KEY
+        base_url = data.get("base_url") or LLM_BASE_URL
+        model    = data.get("model") or LLM_MODEL
+        if provider == "openai" and (not key or key == "ollama"):
+            return jsonify({"error": "OpenAI API key required"}), 400
+        gen = _stream_openai_compat(base_url, key, model, messages, max_tokens)
 
     def stream():
-        for raw in resp:
-            line = raw.decode().strip()
-            if not line.startswith("data:"):
-                continue
-            payload_str = line[5:].strip()
-            if payload_str == "[DONE]":
-                break
-            try:
-                chunk = _json.loads(payload_str)
-                text  = chunk["choices"][0]["delta"].get("content", "")
-                if text:
-                    yield f"data: {_json.dumps({'type':'content_block_delta','delta':{'text':text}})}\n\n"
-            except (KeyError, _json.JSONDecodeError):
-                pass
+        try:
+            for text in gen:
+                yield f"data: {_json.dumps({'type':'content_block_delta','delta':{'text':text}})}\n\n"
+        except RuntimeError as e:
+            yield f"data: {_json.dumps({'type':'error','message':str(e)})}\n\n"
 
     return Response(stream_with_context(stream()), content_type="text/event-stream")
+
+
+# ── FEATURE 9: Style comparison ──────────────────────────────────────────────
+
+@app.route("/api/style-compare", methods=["POST"])
+def api_style_compare():
+    data = request.get_json()
+    your_text    = "\n\n".join(data.get("samples", []))
+    compare_text = data.get("compare_text", "")
+    if not your_text or not compare_text:
+        return jsonify({"error": "samples and compare_text required"}), 400
+
+    yours   = structure_fingerprint(your_text)
+    theirs  = structure_fingerprint(compare_text)
+    yours_v = vocab_fingerprint(data.get("samples", []))
+    theirs_v= vocab_fingerprint([compare_text])
+
+    diffs = []
+    for key, label in [("avg_length","Avg sentence length"), ("length_variance","Sentence rhythm"),
+                       ("short_ratio","Short sentence ratio"), ("long_ratio","Long sentence ratio"),
+                       ("em_dashes","Em-dash usage"), ("semicolons","Semicolon usage")]:
+        yv = yours.get(key, 0); tv = theirs.get(key, 0)
+        diffs.append({"label": label, "yours": yv, "theirs": tv,
+                      "delta": round(tv - yv, 2)})
+
+    return jsonify({
+        "structure_diff": diffs,
+        "yours_ttr":   yours_v.get("ttr", 0),
+        "theirs_ttr":  theirs_v.get("ttr", 0),
+        "yours_sig":   yours_v.get("signature_words", [])[:10],
+        "theirs_sig":  theirs_v.get("signature_words", [])[:10],
+        "yours_tone":  tone_analysis(your_text),
+        "theirs_tone": tone_analysis(compare_text),
+    })
+
+
+# ── FEATURE 10: Revision suggestions ─────────────────────────────────────────
+
+@app.route("/api/revision-suggestions", methods=["POST"])
+def api_revision_suggestions():
+    data          = request.get_json()
+    samples_text  = "\n\n".join(data.get("samples", []))
+    continuation  = data.get("continuation", "")
+    if not samples_text or not continuation:
+        return jsonify({"suggestions": []})
+
+    ref = structure_fingerprint(samples_text)
+    ref_avg = ref.get("avg_length", 15)
+    ref_var = ref.get("length_variance", 20)
+
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", continuation) if s.strip()]
+    suggestions = []
+    for i, sent in enumerate(sentences):
+        words = re.findall(r"\b\w+\b", sent)
+        length = len(words)
+        issues = []
+        if ref_avg > 0:
+            deviation = abs(length - ref_avg) / max(ref_avg, 1)
+            if deviation > 0.8 and length > 5:
+                direction = "much longer" if length > ref_avg else "much shorter"
+                issues.append(f"Sentence is {direction} than your typical style ({length}w vs avg {ref_avg:.0f}w)")
+        # check for punctuation habits mismatch
+        if ref.get("em_dashes", 0) == 0 and "—" in sent:
+            issues.append("Em-dash not typical in your samples")
+        if ref.get("semicolons", 0) == 0 and ";" in sent:
+            issues.append("Semicolon not typical in your samples")
+        if issues:
+            suggestions.append({"index": i, "sentence": sent, "issues": issues})
+
+    return jsonify({"suggestions": suggestions[:8]})  # cap at 8
+
+
+# ── FEATURE 11: Markdown export ───────────────────────────────────────────────
+
+@app.route("/api/export-md", methods=["POST"])
+def api_export_md():
+    data  = request.get_json()
+    title = data.get("title", "StyleMirror Export")
+    seed  = data.get("seed", "")
+    cont  = data.get("continuation", "")
+    score = data.get("score", {})
+
+    lines = [f"# {title}", "", f"*Generated by StyleMirror — {datetime.date.today()}*", ""]
+    if score:
+        lines += [f"**Style Match:** {score.get('confidence','?')}%", ""]
+        if score.get("traits"):
+            lines += ["**Traits:** " + ", ".join(score["traits"]), ""]
+        if score.get("feedback"):
+            lines += [f"> {score['feedback']}", ""]
+    lines += ["---", "", "## Your Seed", "", seed, "", "---", "", "## Continuation", "", cont, ""]
+
+    md = "\n".join(lines)
+    buf = io.BytesIO(md.encode("utf-8"))
+    return send_file(buf, mimetype="text/markdown",
+                     as_attachment=True, download_name="stylemirror_export.md")
+
+
+# ── FEATURE 12: Writing stats ─────────────────────────────────────────────────
+
+@app.route("/api/sessions/stats", methods=["GET"])
+def api_session_stats():
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT date(created_at) as day, SUM(word_count) as words "
+            "FROM sessions GROUP BY day ORDER BY day DESC LIMIT 30"
+        ).fetchall()
+    return jsonify([dict(r) for r in rows])
 
 
 # ── health ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/health")
 def health():
-    return jsonify({"status": "ok", "has_pdf": HAS_PDF, "version": "2.0.0",
+    return jsonify({"status": "ok", "has_pdf": HAS_PDF, "version": "2.1.0",
                     "llm_model": LLM_MODEL, "llm_ready": bool(LLM_API_KEY)})
 
 

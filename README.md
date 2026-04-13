@@ -1,8 +1,8 @@
 # StyleMirror
 
-A writing assistant that learns your voice. Paste samples of your writing, seed a new piece, and StyleMirror continues it in your exact style — fully local, no API keys, no subscriptions.
+A writing assistant that learns your voice. Paste samples of your writing, seed a new piece, and StyleMirror continues it in your exact style.
 
-Powered by **[Ollama](https://ollama.com)** running on your own machine.
+**Hybrid AI mode** — uses Ollama locally when offline, and lets you pick ChatGPT or Gemini when online.
 
 ---
 
@@ -23,7 +23,14 @@ Powered by **[Ollama](https://ollama.com)** running on your own machine.
 | Focus mode | Fullscreen distraction-free writing overlay |
 | Sessions | Save, load, and delete writing sessions (SQLite) |
 | PDF export | Download seed + continuation + style score as a PDF |
-| Themes | 6 accent colour presets |
+| Markdown export | Download seed + continuation + style score as a `.md` file |
+| Style comparison | Paste any external text and see a side-by-side fingerprint diff against your own style |
+| Revision suggestions | Highlights individual sentences in the continuation that drift from your style, with reasons |
+| Writing stats | Daily word count chart, streak counter, and total words written |
+| Context note | Add a one-line context hint (genre, register) that guides generation without overriding style learning |
+| Inline editing | Edit the continuation in-place and re-analyse without regenerating |
+| Sample quality warnings | Flags samples that are too short or have repetitive vocabulary before you generate |
+| Themes | Custom accent and background colour pickers |
 | Languages | EN 🇬🇧 · EN 🇺🇸 · ID · JA · FR · ES · DE · PT · VI |
 
 ---
@@ -35,7 +42,7 @@ Powered by **[Ollama](https://ollama.com)** running on your own machine.
 | Frontend | React 18, Vite 5 |
 | Backend | Python 3.11+, Flask 3.x |
 | Database | SQLite |
-| AI | Ollama (local) |
+| AI | Ollama (local) · OpenAI · Gemini |
 | PDF | fpdf2 |
 
 ---
@@ -160,12 +167,35 @@ Open `http://localhost:5173` in your Android browser ✅
 
 ## Configuration
 
-No configuration is required for local use. If you want to change the model or point to a remote Ollama instance, set these environment variables before starting the backend:
+### Hybrid AI mode
+
+StyleMirror automatically switches AI provider based on your connection:
+
+| Situation | Provider | Key needed? |
+|---|---|---|
+| Offline / localhost | Ollama (local) | No |
+| Online — ChatGPT | OpenAI `gpt-4o-mini` | Yes (paste in UI or set `OPENAI_API_KEY`) |
+| Online — Gemini | Google `gemini-1.5-flash` | Yes (paste in UI or set `GEMINI_API_KEY`) |
+
+When you're online, a **ChatGPT / Gemini** toggle appears above the generate button. Paste your API key there — it's saved to `localStorage` and never sent anywhere except the respective provider's API (via your own backend).
+
+To pre-configure keys on the server instead of entering them in the UI:
+
+```bash
+OPENAI_API_KEY=sk-...   python3 app.py   # ChatGPT
+GEMINI_API_KEY=AIza...  python3 app.py   # Gemini
+```
+
+### Other options
+
+No configuration is required for local/offline use. To change the Ollama model or point to a remote instance:
 
 | Variable | Default | Description |
 |---|---|---|
 | `LLM_MODEL` | `llama3` | Any model you've pulled with `ollama pull` |
 | `OPENAI_BASE_URL` | `http://localhost:11434/v1` | Ollama API URL |
+| `OPENAI_API_KEY` | — | OpenAI key (ChatGPT, online mode) |
+| `GEMINI_API_KEY` | — | Google Gemini key (online mode) |
 
 Example with a different model:
 ```bash
@@ -184,11 +214,15 @@ LLM_MODEL=mistral python3 app.py
 | POST | `/api/tone` | Tone / mood detection |
 | POST | `/api/structure` | Structure fingerprint or drift |
 | POST | `/api/originality` | N-gram similarity check |
+| POST | `/api/style-compare` | Side-by-side fingerprint diff vs external text |
+| POST | `/api/revision-suggestions` | Sentences that drift from your style |
 | POST | `/api/export-pdf` | PDF export |
+| POST | `/api/export-md` | Markdown export |
 | GET | `/api/sessions` | List sessions |
 | POST | `/api/sessions` | Save session |
 | GET | `/api/sessions/:id` | Load session |
 | DELETE | `/api/sessions/:id` | Delete session |
+| GET | `/api/sessions/stats` | Word counts per day (last 30 days) |
 | GET | `/api/health` | Health check |
 
 ---

@@ -88,6 +88,24 @@ const I18N = {
     outputLong: "Long",
     focusMode: "Focus",
     exitFocus: "Exit Focus",
+    styleCompare: "Style Comparison",
+    compareLabel: "Paste text to compare against your style",
+    comparePlaceholder: "Paste any writing here — an author you admire, a target publication, etc.",
+    compareBtn: "Compare Styles",
+    structureDiff: "Structure Differences",
+    signatureWordsYours: "Your signature words",
+    signatureWordsTheirs: "Their signature words",
+    revisionSuggestions: "Revision Suggestions",
+    revisionBtn: "Find Drifting Sentences",
+    noRevisions: "✓ No significant style drift in individual sentences",
+    exportMd: "Export Markdown",
+    mdDownloaded: "Markdown downloaded!",
+    contextNote: "Context Note (optional)",
+    contextNotePlaceholder: "e.g. 'This is a horror short story' or 'formal academic essay'…",
+    writingStats: "Writing Stats",
+    streakDays: "day streak",
+    totalWords: "total words",
+    wordsToday: "words today",
   },
   en_us: {
     tagline: "your voice, continued",
@@ -162,6 +180,24 @@ const I18N = {
     outputLong: "Long",
     focusMode: "Focus",
     exitFocus: "Exit Focus",
+    styleCompare: "Style Comparison",
+    compareLabel: "Paste text to compare against your style",
+    comparePlaceholder: "Paste any writing here — an author you admire, a target publication, etc.",
+    compareBtn: "Compare Styles",
+    structureDiff: "Structure Differences",
+    signatureWordsYours: "Your signature words",
+    signatureWordsTheirs: "Their signature words",
+    revisionSuggestions: "Revision Suggestions",
+    revisionBtn: "Find Drifting Sentences",
+    noRevisions: "✓ No significant style drift in individual sentences",
+    exportMd: "Export Markdown",
+    mdDownloaded: "Markdown downloaded!",
+    contextNote: "Context Note (optional)",
+    contextNotePlaceholder: "e.g. 'This is a horror short story' or 'formal academic essay'…",
+    writingStats: "Writing Stats",
+    streakDays: "day streak",
+    totalWords: "total words",
+    wordsToday: "words today",
   },
   vi: {
     tagline: "giọng văn của bạn, tiếp nối",
@@ -236,6 +272,24 @@ const I18N = {
     outputLong: "Dài",
     focusMode: "Tập trung",
     exitFocus: "Thoát tập trung",
+    styleCompare: "So sánh văn phong",
+    compareLabel: "Dán văn bản để so sánh với văn phong của bạn",
+    comparePlaceholder: "Dán bất kỳ văn bản nào vào đây…",
+    compareBtn: "So sánh",
+    structureDiff: "Khác biệt cấu trúc",
+    signatureWordsYours: "Từ đặc trưng của bạn",
+    signatureWordsTheirs: "Từ đặc trưng của họ",
+    revisionSuggestions: "Gợi ý chỉnh sửa",
+    revisionBtn: "Tìm câu lệch văn phong",
+    noRevisions: "✓ Không có câu nào lệch văn phong đáng kể",
+    exportMd: "Xuất Markdown",
+    mdDownloaded: "Đã tải Markdown!",
+    contextNote: "Ghi chú ngữ cảnh (tùy chọn)",
+    contextNotePlaceholder: "VD: 'Đây là truyện kinh dị' hoặc 'Bài luận học thuật'…",
+    writingStats: "Thống kê viết",
+    streakDays: "ngày liên tiếp",
+    totalWords: "tổng số từ",
+    wordsToday: "từ hôm nay",
   },
   id: {
     tagline: "suaramu, dilanjutkan",
@@ -310,6 +364,24 @@ const I18N = {
     outputLong: "Panjang",
     focusMode: "Fokus",
     exitFocus: "Keluar Fokus",
+    styleCompare: "Perbandingan Gaya",
+    compareLabel: "Tempel teks untuk dibandingkan dengan gayamu",
+    comparePlaceholder: "Tempel tulisan apa saja di sini…",
+    compareBtn: "Bandingkan Gaya",
+    structureDiff: "Perbedaan Struktur",
+    signatureWordsYours: "Kata khasmu",
+    signatureWordsTheirs: "Kata khas mereka",
+    revisionSuggestions: "Saran Revisi",
+    revisionBtn: "Temukan Kalimat Menyimpang",
+    noRevisions: "✓ Tidak ada kalimat yang menyimpang secara signifikan",
+    exportMd: "Ekspor Markdown",
+    mdDownloaded: "Markdown diunduh!",
+    contextNote: "Catatan Konteks (opsional)",
+    contextNotePlaceholder: "Mis: 'Ini cerita horor' atau 'Esai akademik formal'…",
+    writingStats: "Statistik Menulis",
+    streakDays: "hari berturut-turut",
+    totalWords: "total kata",
+    wordsToday: "kata hari ini",
   },
   ja: {
     tagline: "あなたの声を、続けて",
@@ -384,6 +456,24 @@ const I18N = {
     outputLong: "長め",
     focusMode: "集中",
     exitFocus: "集中を終了",
+    styleCompare: "スタイル比較",
+    compareLabel: "あなたのスタイルと比較するテキストを貼り付けてください",
+    comparePlaceholder: "任意の文章をここに貼り付けてください…",
+    compareBtn: "スタイルを比較",
+    structureDiff: "構造の違い",
+    signatureWordsYours: "あなたの特徴語",
+    signatureWordsTheirs: "相手の特徴語",
+    revisionSuggestions: "修正提案",
+    revisionBtn: "スタイルが外れた文を探す",
+    noRevisions: "✓ 個々の文に大きなスタイルのずれはありません",
+    exportMd: "Markdownエクスポート",
+    mdDownloaded: "Markdownをダウンロードしました！",
+    contextNote: "コンテキストメモ（任意）",
+    contextNotePlaceholder: "例：「これはホラー短編です」または「学術論文」…",
+    writingStats: "執筆統計",
+    streakDays: "日連続",
+    totalWords: "合計語数",
+    wordsToday: "今日の語数",
   },
   fr: {
     tagline: "votre voix, continuée",
@@ -458,6 +548,24 @@ const I18N = {
     outputLong: "Long",
     focusMode: "Focus",
     exitFocus: "Quitter le focus",
+    styleCompare: "Comparaison de style",
+    compareLabel: "Collez un texte à comparer avec votre style",
+    comparePlaceholder: "Collez n'importe quel texte ici…",
+    compareBtn: "Comparer les styles",
+    structureDiff: "Différences structurelles",
+    signatureWordsYours: "Vos mots caractéristiques",
+    signatureWordsTheirs: "Leurs mots caractéristiques",
+    revisionSuggestions: "Suggestions de révision",
+    revisionBtn: "Trouver les phrases déviantes",
+    noRevisions: "✓ Aucune dérive de style significative dans les phrases",
+    exportMd: "Exporter en Markdown",
+    mdDownloaded: "Markdown téléchargé !",
+    contextNote: "Note de contexte (optionnel)",
+    contextNotePlaceholder: "Ex : 'Ceci est une nouvelle d'horreur' ou 'Essai académique formel'…",
+    writingStats: "Statistiques d'écriture",
+    streakDays: "jours consécutifs",
+    totalWords: "mots au total",
+    wordsToday: "mots aujourd'hui",
   },
   es: {
     tagline: "tu voz, continuada",
@@ -532,6 +640,24 @@ const I18N = {
     outputLong: "Largo",
     focusMode: "Enfoque",
     exitFocus: "Salir del enfoque",
+    styleCompare: "Comparación de estilo",
+    compareLabel: "Pega texto para comparar con tu estilo",
+    comparePlaceholder: "Pega cualquier texto aquí…",
+    compareBtn: "Comparar estilos",
+    structureDiff: "Diferencias estructurales",
+    signatureWordsYours: "Tus palabras características",
+    signatureWordsTheirs: "Sus palabras características",
+    revisionSuggestions: "Sugerencias de revisión",
+    revisionBtn: "Encontrar oraciones desviadas",
+    noRevisions: "✓ No hay desviación de estilo significativa en las oraciones",
+    exportMd: "Exportar Markdown",
+    mdDownloaded: "¡Markdown descargado!",
+    contextNote: "Nota de contexto (opcional)",
+    contextNotePlaceholder: "Ej: 'Esto es un relato de terror' o 'Ensayo académico formal'…",
+    writingStats: "Estadísticas de escritura",
+    streakDays: "días seguidos",
+    totalWords: "palabras en total",
+    wordsToday: "palabras hoy",
   },
   de: {
     tagline: "deine Stimme, fortgesetzt",
@@ -606,6 +732,24 @@ const I18N = {
     outputLong: "Lang",
     focusMode: "Fokus",
     exitFocus: "Fokus beenden",
+    styleCompare: "Stilvergleich",
+    compareLabel: "Füge Text ein, um ihn mit deinem Stil zu vergleichen",
+    comparePlaceholder: "Füge beliebigen Text hier ein…",
+    compareBtn: "Stile vergleichen",
+    structureDiff: "Strukturunterschiede",
+    signatureWordsYours: "Deine charakteristischen Wörter",
+    signatureWordsTheirs: "Ihre charakteristischen Wörter",
+    revisionSuggestions: "Überarbeitungsvorschläge",
+    revisionBtn: "Abweichende Sätze finden",
+    noRevisions: "✓ Keine signifikante Stilabweichung in einzelnen Sätzen",
+    exportMd: "Markdown exportieren",
+    mdDownloaded: "Markdown heruntergeladen!",
+    contextNote: "Kontextnotiz (optional)",
+    contextNotePlaceholder: "Z.B. 'Das ist eine Horrorgeschichte' oder 'Formeller Aufsatz'…",
+    writingStats: "Schreibstatistiken",
+    streakDays: "Tage in Folge",
+    totalWords: "Wörter gesamt",
+    wordsToday: "Wörter heute",
   },
   pt: {
     tagline: "sua voz, continuada",
@@ -680,6 +824,24 @@ const I18N = {
     outputLong: "Longo",
     focusMode: "Foco",
     exitFocus: "Sair do foco",
+    styleCompare: "Comparação de estilo",
+    compareLabel: "Cole texto para comparar com seu estilo",
+    comparePlaceholder: "Cole qualquer texto aqui…",
+    compareBtn: "Comparar estilos",
+    structureDiff: "Diferenças estruturais",
+    signatureWordsYours: "Suas palavras características",
+    signatureWordsTheirs: "Palavras características deles",
+    revisionSuggestions: "Sugestões de revisão",
+    revisionBtn: "Encontrar frases desviantes",
+    noRevisions: "✓ Nenhum desvio de estilo significativo nas frases",
+    exportMd: "Exportar Markdown",
+    mdDownloaded: "Markdown baixado!",
+    contextNote: "Nota de contexto (opcional)",
+    contextNotePlaceholder: "Ex: 'Este é um conto de terror' ou 'Ensaio acadêmico formal'…",
+    writingStats: "Estatísticas de escrita",
+    streakDays: "dias seguidos",
+    totalWords: "palavras no total",
+    wordsToday: "palavras hoje",
   },
 };
 
@@ -756,13 +918,13 @@ const readabilityClass = level => ({
   "Very Confusing":  "rdbl-very-confusing",
 }[level] ?? "rdbl-standard");
 
-const SYSTEM_PROMPT = (styleDesc, sampleText) => `You are StyleMirror, a writing assistant that continues text in the exact voice, tone, and style of a specific writer.
+const SYSTEM_PROMPT = (styleDesc, sampleText, contextNote = "") => `You are StyleMirror, a writing assistant that continues text in the exact voice, tone, and style of a specific writer.
 
 WRITER'S STYLE PROFILE (derived from their past writing):
 ${sampleText ? `<style_samples>\n${sampleText}\n</style_samples>` : "No prior samples provided — use the new input as the style anchor."}
 
 STYLE MODE: ${styleDesc}
-
+${contextNote ? `\nCONTEXT NOTE FROM WRITER: ${contextNote}\n` : ""}
 Your task:
 1. Analyze the writer's unique patterns: sentence length variation, vocabulary register, use of punctuation, paragraph rhythm, use of metaphor/abstraction vs concreteness, how they open and close ideas.
 2. Continue their NEW PIECE seamlessly — it must read as if the same person wrote every word.
@@ -1664,6 +1826,229 @@ const FocusMode = ({ value, onChange, placeholder, onExit, t }) => (
   </div>
 );
 
+// ── Feature 14: Style Comparison Panel ───────────────────────────────────────
+
+const StyleComparePanel = ({ samples, t }) => {
+  const [compareText, setCompareText] = useState("");
+  const [data, setData]               = useState(null);
+  const [busy, setBusy]               = useState(false);
+
+  const run = async () => {
+    if (!compareText.trim() || !samples.length) return;
+    setBusy(true);
+    try {
+      const r = await fetch(`${API_BASE}/api/style-compare`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ samples: samples.map(s => s.text), compare_text: compareText }),
+      });
+      if (r.ok) setData(await r.json());
+    } catch { /* silent */ }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Card style={{ marginTop:"1rem" }}>
+      <Label>{t.styleCompare}</Label>
+      <p style={{ fontSize:12, color:"var(--text-muted)", marginBottom:8 }}>{t.compareLabel}</p>
+      <textarea value={compareText} onChange={e => setCompareText(e.target.value)}
+        placeholder={t.comparePlaceholder} rows={5}
+        style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:"var(--radius-sm)", fontFamily:"inherit", fontSize:13, color:"var(--text)", background:"var(--bg)", resize:"vertical", boxSizing:"border-box", marginBottom:8 }}/>
+      <Btn onClick={run} disabled={busy || !compareText.trim() || !samples.length} variant="primary">
+        {busy && <Spinner/>} {t.compareBtn}
+      </Btn>
+      {data && (
+        <div style={{ marginTop:"1rem" }}>
+          <div style={{ marginBottom:10 }}>
+            <Label>{t.structureDiff}</Label>
+            {data.structure_diff.map((d, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5, fontSize:12 }}>
+                <span style={{ minWidth:160, color:"var(--text-muted)", fontFamily:"var(--font-ui)" }}>{d.label}</span>
+                <span style={{ fontFamily:"monospace", color:"var(--accent)", minWidth:40 }}>{d.yours}</span>
+                <span style={{ color:"var(--text-faint)" }}>→</span>
+                <span style={{ fontFamily:"monospace", color: d.delta > 0 ? "var(--amber)" : d.delta < 0 ? "var(--red)" : "var(--green)", minWidth:40 }}>{d.theirs}</span>
+                {d.delta !== 0 && <span style={{ fontSize:10, color:"var(--text-faint)" }}>({d.delta > 0 ? "+" : ""}{d.delta})</span>}
+              </div>
+            ))}
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+            <div>
+              <div style={{ fontSize:11, color:"var(--text-muted)", marginBottom:4 }}>{t.signatureWordsYours}</div>
+              <div>{data.yours_sig?.map(w => <Pill key={w} color="var(--accent-dark)" bg="var(--accent-light)">{w}</Pill>)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize:11, color:"var(--text-muted)", marginBottom:4 }}>{t.signatureWordsTheirs}</div>
+              <div>{data.theirs_sig?.map(w => <Pill key={w}>{w}</Pill>)}</div>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:12, marginTop:10 }}>
+            {[["You", data.yours_tone], ["Them", data.theirs_tone]].map(([label, tone]) => {
+              const tc = TONE_COLORS[tone?.dominant] || TONE_COLORS.neutral;
+              return (
+                <div key={label} style={{ display:"flex", alignItems:"center", gap:6 }}>
+                  <span style={{ fontSize:11, color:"var(--text-muted)" }}>{label}:</span>
+                  <span style={{ padding:"2px 8px", borderRadius:10, fontSize:11, background:tc.bg, color:tc.color }}>{tone?.dominant}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+};
+
+// ── Feature 15: Revision Suggestions Panel ────────────────────────────────────
+
+const RevisionSuggestionsPanel = ({ samples, continuation, t }) => {
+  const [data, setData] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const run = async () => {
+    if (!continuation || !samples.length) return;
+    setBusy(true);
+    try {
+      const r = await fetch(`${API_BASE}/api/revision-suggestions`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ samples: samples.map(s => s.text), continuation }),
+      });
+      if (r.ok) setData(await r.json());
+    } catch { /* silent */ }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Card style={{ marginTop:"1rem" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+        <Label>{t.revisionSuggestions}</Label>
+        <Btn onClick={run} disabled={busy || !continuation || !samples.length} variant={continuation && samples.length ? "primary" : "ghost"}>
+          {busy && <Spinner/>} {t.revisionBtn}
+        </Btn>
+      </div>
+      {data ? (
+        data.suggestions.length === 0 ? (
+          <p style={{ fontSize:13, color:"var(--green)", fontFamily:"inherit" }}>{t.noRevisions}</p>
+        ) : (
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {data.suggestions.map((s, i) => (
+              <div key={i} style={{ padding:"10px 12px", background:"#fdf5e8", border:"1px solid #e8d0a0", borderRadius:"var(--radius-sm)" }}>
+                <p style={{ fontSize:13, fontFamily:"inherit", fontStyle:"italic", color:"var(--text)", margin:"0 0 6px" }}>"{s.sentence}"</p>
+                {s.issues.map((issue, j) => (
+                  <div key={j} style={{ fontSize:11, color:"var(--amber)" }}>⚠ {issue}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )
+      ) : (
+        <p style={{ fontSize:13, color:"var(--text-muted)", fontFamily:"inherit" }}>
+          {continuation && samples.length ? `Click ${t.revisionBtn} to find sentences that drift from your style.` : "Requires samples and a continuation."}
+        </p>
+      )}
+    </Card>
+  );
+};
+
+// ── Feature 16: Export Markdown ───────────────────────────────────────────────
+
+const ExportMarkdown = ({ seed, continuation, score, profile, t }) => {
+  const [toast, setToast] = useState("");
+
+  const doExport = async () => {
+    try {
+      const r = await fetch(`${API_BASE}/api/export-md`, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ title:`StyleMirror — ${STYLE_PROFILES[profile].label}`, seed, continuation, score }),
+      });
+      if (!r.ok) { setToast("Export failed"); return; }
+      const blob = await r.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "stylemirror_export.md"; a.click();
+      URL.revokeObjectURL(a.href);
+      setToast(t?.mdDownloaded ?? "Markdown downloaded!");
+    } catch { setToast(t?.backendOffline ?? "Backend offline"); }
+    setTimeout(() => setToast(""), 3000);
+  };
+
+  return (
+    <div style={{ position:"relative" }}>
+      <Btn onClick={doExport} variant="ghost" style={{ width:"100%", justifyContent:"center" }}>
+        {t?.exportMd ?? "Export Markdown"}
+      </Btn>
+      {toast && (
+        <div className="animate-fadeIn" style={{ position:"absolute", top:"-40px", left:"50%", transform:"translateX(-50%)", background:"var(--text)", color:"#fff", fontSize:12, padding:"5px 12px", borderRadius:8, whiteSpace:"nowrap", fontFamily:FONTS.ui }}>
+          {toast}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Feature 17: Writing Stats Dashboard ──────────────────────────────────────
+
+const WritingStatsDashboard = ({ t }) => {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    // Build stats from localStorage sessions
+    const sessions = lsGetSessions();
+    const byDay = {};
+    for (const s of sessions) {
+      const day = s.created_at?.slice(0, 10) ?? "unknown";
+      byDay[day] = (byDay[day] || 0) + (s.word_count || 0);
+    }
+    const sorted = Object.entries(byDay).sort(([a], [b]) => b.localeCompare(a)).slice(0, 14);
+    const total  = sessions.reduce((sum, s) => sum + (s.word_count || 0), 0);
+    const today  = new Date().toISOString().slice(0, 10);
+    const todayWords = byDay[today] || 0;
+
+    // streak: consecutive days with at least 1 word
+    let streak = 0;
+    const d = new Date();
+    while (true) {
+      const key = d.toISOString().slice(0, 10);
+      if (!byDay[key]) break;
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+
+    setStats({ byDay: sorted, total, todayWords, streak });
+  }, []);
+
+  if (!stats) return null;
+  const maxWords = Math.max(...stats.byDay.map(([, v]) => v), 1);
+
+  return (
+    <Card style={{ marginTop:"1rem" }}>
+      <Label>{t?.writingStats ?? "Writing Stats"}</Label>
+      <div style={{ display:"flex", gap:20, marginBottom:12, flexWrap:"wrap" }}>
+        {[
+          [stats.streak, t?.streakDays ?? "day streak"],
+          [stats.total,  t?.totalWords ?? "total words"],
+          [stats.todayWords, t?.wordsToday ?? "words today"],
+        ].map(([v, label]) => (
+          <div key={label} style={{ textAlign:"center" }}>
+            <div style={{ fontSize:22, fontWeight:500, color:"var(--accent)", fontFamily:FONTS.ui }}>{v}</div>
+            <div style={{ fontSize:11, color:"var(--text-muted)" }}>{label}</div>
+          </div>
+        ))}
+      </div>
+      {stats.byDay.length > 0 && (
+        <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+          {stats.byDay.map(([day, words]) => (
+            <div key={day} style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:10, color:"var(--text-faint)", fontFamily:FONTS.mono, minWidth:80 }}>{day}</span>
+              <div style={{ flex:1, height:6, background:"var(--border)", borderRadius:3, overflow:"hidden" }}>
+                <div style={{ width:`${(words / maxWords) * 100}%`, height:"100%", background:"var(--accent)", borderRadius:3 }}/>
+              </div>
+              <span style={{ fontSize:10, color:"var(--text-muted)", fontFamily:FONTS.mono, minWidth:36, textAlign:"right" }}>{words}w</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+};
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 export default function StyleMirror() {
@@ -1684,13 +2069,17 @@ export default function StyleMirror() {
   const [lang,          setLang]         = useState("en_gb");
   const [outputLen,     setOutputLen]    = useState("medium");
   const [focusMode,     setFocusMode]    = useState(false);
-  const [apiKey,        setApiKey]       = useState(() => localStorage.getItem("sm_api_key") || "ollama");
+  const [apiKey,        setApiKey]       = useState(() => localStorage.getItem("sm_api_key") || "");
   const [baseUrl,       setBaseUrl]      = useState(() => localStorage.getItem("sm_base_url") || "http://localhost:11434/v1");
   const [llmModel,      setLlmModel]     = useState(() => localStorage.getItem("sm_model") || "llama3");
   const [showKeyModal,  setShowKeyModal] = useState(false);
   const [keyInput,      setKeyInput]     = useState("");
   const [baseUrlInput,  setBaseUrlInput] = useState("");
   const [modelInput,    setModelInput]   = useState("");
+  // hybrid mode: "ollama" (offline/localhost) | "openai" | "gemini"
+  const [isOnline,      setIsOnline]     = useState(() => navigator.onLine);
+  const [provider,      setProvider]     = useState(() => localStorage.getItem("sm_provider") || "openai");
+  const [contextNote,   setContextNote]  = useState("");
   const t = I18N[lang];
   const streamRef = useRef("");
   const outputRef = useRef(null);
@@ -1706,9 +2095,12 @@ export default function StyleMirror() {
     // restore autosaved seed
     const saved = localStorage.getItem("sm_autosave_seed");
     if (saved) setSeed(saved);
+    const goOnline  = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener("online",  goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => { window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
   }, []);
-
-  // autosave seed
   useEffect(() => {
     const t = setTimeout(() => localStorage.setItem("sm_autosave_seed", seed), 600);
     return () => clearTimeout(t);
@@ -1728,19 +2120,32 @@ export default function StyleMirror() {
     streamRef.current = "";
     const sampleText = samples.map((s, i) => `--- Sample ${i+1}: "${s.title}" ---\n${s.text}`).join("\n\n");
     const maxTokens  = OUTPUT_LENGTHS.find(o => o.key === outputLen)?.tokens ?? 1000;
+
+    // Hybrid: offline → Ollama, online → chosen provider
+    const activeProvider = isOnline ? provider : "ollama";
+    const body = {
+      provider:   activeProvider,
+      max_tokens: maxTokens,
+      stream:     true,
+      system:     SYSTEM_PROMPT(STYLE_PROFILES[profile].prompt, sampleText, contextNote),
+      messages:   [{ role:"user", content:`Here is my new piece. Please continue it in my voice:\n\n${seed}` }],
+    };
+    if (activeProvider === "ollama") {
+      body.base_url = baseUrl;
+      body.model    = llmModel;
+    } else if (activeProvider === "openai") {
+      body.api_key = apiKey;
+      body.model   = "gpt-4o-mini";
+    } else if (activeProvider === "gemini") {
+      body.api_key = apiKey;
+      body.model   = "gemini-1.5-flash";
+    }
+
     try {
       const resp = await fetch(`${API_BASE}/api/generate`, {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-          api_key:    apiKey,
-          base_url:   baseUrl,
-          model:      llmModel,
-          max_tokens: maxTokens,
-          stream:     true,
-          system:     SYSTEM_PROMPT(STYLE_PROFILES[profile].prompt, sampleText),
-          messages:   [{ role:"user", content:`Here is my new piece. Please continue it in my voice:\n\n${seed}` }],
-        }),
+        body: JSON.stringify(body),
       });
       if (!resp.ok) throw new Error(`API error ${resp.status}`);
       const reader = resp.body.getReader();
@@ -1751,11 +2156,12 @@ export default function StyleMirror() {
         for (const line of dec.decode(value).split("\n").filter(l => l.startsWith("data:"))) {
           try {
             const d = JSON.parse(line.slice(5));
+            if (d.type === "error") throw new Error(d.message);
             if (d.type === "content_block_delta" && d.delta?.text) {
               streamRef.current += d.delta.text;
               setStreamText(streamRef.current);
             }
-          } catch { /* skip */ }
+          } catch(e) { if (e instanceof SyntaxError) continue; throw e; }
         }
       }
       const parsed = parseResponse(streamRef.current);
@@ -1768,7 +2174,7 @@ export default function StyleMirror() {
     } finally {
       setStreaming(false);
     }
-  }, [samples, seed, profile]);
+  }, [samples, seed, profile, contextNote, isOnline, provider, apiKey, baseUrl, llmModel, outputLen]);
 
   const handleLoadSession = d => {
     if (d.seed)         setSeed(d.seed);
@@ -1858,6 +2264,7 @@ export default function StyleMirror() {
             labels={samples.map(s => s.title)}
             t={t}
           />
+          <StyleComparePanel samples={samples} t={t}/>
           {samples.length > 0 && (
             <Btn onClick={() => setTab("write")} variant="light" style={{ marginTop:"1rem", width:"100%", justifyContent:"center", padding:"12px" }}>
               {t.continueToWrite}
@@ -1905,8 +2312,50 @@ export default function StyleMirror() {
           </div>
 
           <OutputLengthPicker value={outputLen} onChange={setOutputLen} t={t}/>
+
+          <div style={{ marginBottom:"1rem" }}>
+            <Label>{t.contextNote}</Label>
+            <input value={contextNote} onChange={e => setContextNote(e.target.value)}
+              placeholder={t.contextNotePlaceholder}
+              style={{ width:"100%", padding:"9px 12px", border:"1px solid var(--border)", borderRadius:"var(--radius-sm)", fontFamily:FONTS.ui, fontSize:13, color:"var(--text)", background:"var(--surface-2)", boxSizing:"border-box" }}/>
+          </div>
+
           <ReadabilityPanel text={seed} t={t}/>
           <ErrorBox msg={error}/>
+
+          {/* ── Hybrid provider picker ── */}
+          <div style={{ margin:"1rem 0", padding:"12px 16px", background:"var(--surface-2)", border:"1px solid var(--border)", borderRadius:"var(--radius-md)" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:8 }}>
+              <span style={{ fontSize:12, color:"var(--text-muted)", fontFamily:FONTS.ui }}>
+                {isOnline ? "🌐 Online" : "🔌 Offline — using Ollama"}
+              </span>
+              {isOnline && (
+                <div style={{ display:"flex", gap:6 }}>
+                  {[["openai","ChatGPT"],["gemini","Gemini"]].map(([p, label]) => (
+                    <button key={p} onClick={() => { setProvider(p); localStorage.setItem("sm_provider", p); }}
+                      style={{ padding:"5px 14px", fontSize:12, cursor:"pointer", borderRadius:20, border:"1px solid",
+                        background: provider===p ? "var(--accent)" : "var(--surface)",
+                        color:      provider===p ? "#fff" : "var(--text-muted)",
+                        borderColor: provider===p ? "var(--accent)" : "var(--border)",
+                        fontFamily: FONTS.ui, transition:"all 0.15s" }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {isOnline && (
+              <div style={{ marginTop:8 }}>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={e => { setApiKey(e.target.value); localStorage.setItem("sm_api_key", e.target.value); }}
+                  placeholder={provider === "gemini" ? "Gemini API key…" : "OpenAI API key…"}
+                  style={{ width:"100%", padding:"7px 10px", fontSize:12, border:"1px solid var(--border)", borderRadius:"var(--radius-sm)", fontFamily:FONTS.mono, color:"var(--text)", background:"var(--bg)", boxSizing:"border-box" }}
+                />
+              </div>
+            )}
+          </div>
 
           <Btn onClick={generate} disabled={streaming} variant="primary"
             style={{ width:"100%", justifyContent:"center", padding:"14px", fontSize:15, borderRadius:"var(--radius-md)", marginTop:"1rem", opacity:streaming?0.6:1 }}>
@@ -1928,6 +2377,7 @@ export default function StyleMirror() {
       {/* ── SESSIONS ── */}
       {tab === "sessions" && (
         <div className="animate-fadeIn">
+          <WritingStatsDashboard t={t}/>
           <SessionsPanel onLoad={handleLoadSession} t={t}/>
         </div>
       )}
@@ -1975,11 +2425,13 @@ export default function StyleMirror() {
           />
           <StructurePanel text={displayText} label={t.continuation} t={t}/>
           <StyleDriftPanel samplesText={samplesText} continuationText={displayText} t={t}/>
+          <RevisionSuggestionsPanel samples={samples} continuation={displayText} t={t}/>
           <OriginalityCheck text={displayText} samples={samples} t={t}/>
 
-          <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr 1fr", gap:8, marginTop:"1rem", marginBottom:"1rem" }}>
+          <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr 1fr 1fr 1fr", gap:8, marginTop:"1rem", marginBottom:"1rem" }}>
             <Btn onClick={() => navigator.clipboard.writeText(seed + "\n\n" + displayText)} variant="ghost" style={{ justifyContent:"center" }}>{t.copyText}</Btn>
             <ExportPDF seed={seed} continuation={displayText} score={result.score} profile={profile} t={t}/>
+            <ExportMarkdown seed={seed} continuation={displayText} score={result.score} profile={profile} t={t}/>
             <Btn onClick={generate} disabled={streaming} variant="light" style={{ justifyContent:"center" }}>↺ Regenerate</Btn>
             <Btn onClick={() => { setResult(null); setEditedText(null); setSeed(""); setTab("write"); }} variant="ghost" style={{ justifyContent:"center" }}>{t.newPiece}</Btn>
           </div>
