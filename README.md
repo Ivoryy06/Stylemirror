@@ -49,10 +49,17 @@ A writing assistant that learns your voice. Paste samples of your writing, seed 
 
 ## Requirements
 
-- [Ollama](https://ollama.com) — runs the AI model locally
 - [Node.js 18+](https://nodejs.org)
 - [Python 3.11+](https://www.python.org/downloads/)
 - [Git](https://git-scm.com)
+
+### Offline / local AI (Ollama)
+
+> ⚠️ **Hardware requirement:** Running Ollama locally requires a minimum of **16 GB RAM** and a **dedicated GPU** (NVIDIA or AMD with ≥ 8 GB VRAM). On machines below this spec, generation will be extremely slow or fail entirely.
+>
+> If your device doesn't meet this requirement, use the **web version** at [ivoryy06.github.io/Stylemirror](https://ivoryy06.github.io/Stylemirror) with a ChatGPT or Gemini API key instead — no local hardware needed.
+
+- [Ollama](https://ollama.com) — runs the AI model locally
 
 ---
 
@@ -173,11 +180,11 @@ StyleMirror automatically switches AI provider based on your connection:
 
 | Situation | Provider | Key needed? |
 |---|---|---|
-| Offline / localhost | Ollama (local) | No |
+| Offline / localhost | Ollama (local) — **forced, no other option** | No (requires 16 GB RAM + dedicated GPU) |
 | Online — ChatGPT | OpenAI `gpt-4o-mini` | Yes (paste in UI or set `OPENAI_API_KEY`) |
 | Online — Gemini | Google `gemini-1.5-flash` | Yes (paste in UI or set `GEMINI_API_KEY`) |
 
-When you're online, a **ChatGPT / Gemini** toggle appears above the generate button. Paste your API key there — it's saved to `localStorage` and never sent anywhere except the respective provider's API (via your own backend).
+When offline, the provider is locked to Ollama — the ChatGPT/Gemini picker is hidden. When online, you choose between ChatGPT and Gemini in the UI.
 
 To pre-configure keys on the server instead of entering them in the UI:
 
