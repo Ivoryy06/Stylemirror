@@ -1,4 +1,4 @@
-// StyleMirror v2.0 — StyleMirror.jsx
+
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import "./src/index.css";
@@ -12,7 +12,7 @@ const FONTS = {
   ui:      "'Inter', system-ui, sans-serif",
 };
 
-// ── i18n ──────────────────────────────────────────────────────────────────────
+
 
 const I18N = {
   en_gb: {
@@ -858,7 +858,7 @@ const useIsMobile = () => {
 };
 
 
-// Accent colour presets — hue-shifted so light/mid/dark all derive from one hex
+
 const ACCENT_PRESETS = [
   { label:"Lavender", accent:"#7c6fcd", light:"#eeecfb", mid:"#c5bff0", dark:"#5a4fb0" },
   { label:"Rose",     accent:"#c0607a", light:"#fceef2", mid:"#e8aab8", dark:"#9a3f58" },

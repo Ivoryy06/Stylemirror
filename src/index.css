@@ -43,7 +43,7 @@ button { transition: opacity 0.15s, box-shadow 0.15s; }
 button:hover:not(:disabled) { opacity: 0.88; }
 textarea:focus, input:focus { outline: 2px solid var(--accent-mid); outline-offset: 1px; }
 
-/* readability badges */
+
 .rdbl-very-easy    { background: #e6f4ea; color: #2d7a4a; }
 .rdbl-easy         { background: #edf7f2; color: #3a8a5a; }
 .rdbl-fairly-easy  { background: #f0f7e6; color: #4a7a2a; }
@@ -52,12 +52,12 @@ textarea:focus, input:focus { outline: 2px solid var(--accent-mid); outline-offs
 .rdbl-difficult    { background: #fdecea; color: #b03030; }
 .rdbl-very-confusing { background: #f9e6e6; color: #902020; }
 
-/* sentence heatmap bars */
+
 .sent-bar-short { background: #a8d8b8; }
 .sent-bar-mid   { background: #f0c070; }
 .sent-bar-long  { background: #e89070; }
 
-/* skeleton shimmer */
+
 .skeleton {
   background: linear-gradient(90deg, var(--border-soft) 25%, var(--border) 50%, var(--border-soft) 75%);
   background-size: 200% 100%;
@@ -65,5 +65,5 @@ textarea:focus, input:focus { outline: 2px solid var(--accent-mid); outline-offs
 }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
-/* score ring */
+
 .score-ring-arc { transition: stroke-dasharray 0.8s ease; }
